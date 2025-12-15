@@ -10,36 +10,30 @@ pub struct Block {
 impl Block {
 
     pub fn parse(default_origin: &str, input: &str) -> Result<Self, String> {
-        let period_end_index;
-        let content_start_index;
+        let period_end;
+        let desc_start;
         let mut origin = default_origin.to_string();
 
         if let Some(idx) = input.find('[') {
-            period_end_index = idx;
-            content_start_index = idx;
+            period_end = idx;
+            desc_start = idx;
         } else {
-            let trimmed_period = input.trim_start_matches(|c: char| c.is_ascii_digit() || c == ':' || c == ' ' || c == '-');
-            period_end_index = input.len() - trimmed_period.len();
-            content_start_index = period_end_index;
+            let trimmed_period = input.trim_start_matches(
+                |c: char| c.is_ascii_digit() || c == ':' || c == ' ' || c == '-'
+            );
+            period_end = input.len() - trimmed_period.len();
+            desc_start = period_end;
         }
 
-        let period = input[..period_end_index].trim().to_string();
-        let content = input[content_start_index..].trim_start(); // Content starts here
+        let period = input[..period_end].trim().to_string();
 
-        let mut description = content;
-
+        let mut description = input[desc_start..].trim_start();
         if description.starts_with('[') {
             if let Some(end_bracket_index) = description.find(']') {
-                // Extract the origin tag (excluding brackets)
                 origin = description[1..end_bracket_index].trim().to_string();
-
-                // The description starts after the closing bracket, trimming leading space
-                let start_desc_index = end_bracket_index + 1;
-                description = description[start_desc_index..].trim_start();
+                description = description[end_bracket_index + 1..].trim_start();
             }
         }
-
-        // Final arbitrary description
         let desc = description.to_string();
 
         Ok(Block {
