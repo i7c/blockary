@@ -1,10 +1,14 @@
 use pulldown_cmark::{Event, HeadingLevel, Parser, Tag, TagEnd};
 use std::fs;
 
+mod block;
+
 fn main() {
     let content = fs::read_to_string("/Users/cmw/git/criptonotes/brain/journal/2025/2025-12-11.md")
         .expect("should have read the file");
     let parser = Parser::new(&content);
+
+    let mut blocks: Vec<block::Block> = Vec::new();
 
     let mut check_block = false;
     let mut in_block = false;
@@ -21,7 +25,7 @@ fn main() {
             },
             Event::End(TagEnd::Item) => {
                 if in_item {
-                    println!("{item_content}");
+                    blocks.push(block::parse_block_string("Personal", &item_content));
                     in_item = false;
                 }
             },
