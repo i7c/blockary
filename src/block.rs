@@ -78,4 +78,19 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_parse_good_string_without_origin_tag_but_brackets() {
+        let b = Block::parse("Personal", "07:30 - 08:00 Morning Correspondence: talk to [[Lars]] later").expect("");
+
+        assert_eq!(
+            b,
+            Block {
+                period: "07:30 - 08:00".to_string(),
+                origin: "Personal".to_string(),
+                desc: "Morning Correspondence: talk to [[Lars]] later".to_string(),
+            }
+        );
+    }
+
+
 }
