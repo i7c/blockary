@@ -25,7 +25,7 @@ fn main() {
             },
             Event::End(TagEnd::Item) => {
                 if in_item {
-                    blocks.push(block::parse_block_string("Personal", &item_content));
+                    blocks.push(block::Block::parse("Personal", &item_content).expect(""));
                     in_item = false;
                 }
             },
