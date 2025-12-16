@@ -1,11 +1,9 @@
 #[derive(Debug, PartialEq, Eq)]
 pub struct Block {
-    period: String,
-    origin: String,
-    desc: String,
+    pub period: String,
+    pub origin: String,
+    pub desc: String,
 }
-
-// ... struct Block remains the same ...
 
 impl Block {
 
