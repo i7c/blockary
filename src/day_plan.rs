@@ -11,12 +11,21 @@ pub struct DayPlan {
 
 impl DayPlan {
     pub fn from_file(file_path: &str, origin: &str) -> DayPlan {
-        let blocks = read_blocks(file_path);
+        let blocks = read_blocks(file_path, origin);
         DayPlan { file_path: file_path.to_string(), origin: origin.to_string(), blocks: blocks }
+    }
+
+    pub fn only_original_blocks(self: DayPlan) -> DayPlan {
+        let orig_blocks = self.blocks.into_iter().filter(|b| b.origin == self.origin).collect();
+        DayPlan {
+            file_path: self.file_path,
+            origin: self.origin,
+            blocks: orig_blocks,
+        }
     }
 }
 
-pub fn read_blocks(file_path: &str) -> Vec<block::Block> {
+pub fn read_blocks(file_path: &str, origin: &str) -> Vec<block::Block> {
     let content = fs::read_to_string(file_path)
         .expect("should have read the file");
     let parser = Parser::new(&content);
@@ -38,7 +47,7 @@ pub fn read_blocks(file_path: &str) -> Vec<block::Block> {
             },
             Event::End(TagEnd::Item) => {
                 if in_item {
-                    blocks.push(block::Block::parse("Personal", &item_content).expect(""));
+                    blocks.push(block::Block::parse(origin, &item_content).expect(""));
                     in_item = false;
                 }
             },
