@@ -8,26 +8,18 @@ pub struct Block {
 impl Block {
 
     pub fn parse(default_origin: &str, input: &str) -> Result<Self, String> {
-        let period_end;
-        let desc_start;
-        let mut origin = default_origin.to_string();
-
-        if let Some(idx) = input.find('[') {
-            period_end = idx;
-            desc_start = idx;
-        } else {
-            let trimmed_period = input.trim_start_matches(
-                |c: char| c.is_ascii_digit() || c == ':' || c == ' ' || c == '-'
-            );
-            period_end = input.len() - trimmed_period.len();
-            desc_start = period_end;
-        }
+        let trimmed_period = input.trim_start_matches(
+            |c: char| c.is_ascii_digit() || c == ':' || c == ' ' || c == '-'
+        );
+        let period_end = input.len() - trimmed_period.len();
+        let desc_start = period_end;
 
         let period = input[..period_end].trim().to_string();
 
         let mut description = input[desc_start..].trim_start();
-        if description.starts_with('[') {
-            if let Some(end_bracket_index) = description.find(']') {
+        let mut origin = default_origin.to_string();
+        if description.starts_with('(') {
+            if let Some(end_bracket_index) = description.find(')') {
                 origin = description[1..end_bracket_index].trim().to_string();
                 description = description[end_bracket_index + 1..].trim_start();
             }
@@ -50,7 +42,7 @@ mod tests {
 
     #[test]
     fn test_parse_good_string_with_origin_tag() {
-        let b = Block::parse("Personal", "08:00 - 09:00 [Personal] Morning Correspondence").expect("");
+        let b = Block::parse("Personal", "08:00 - 09:00 (Personal) Morning Correspondence").expect("");
 
         assert_eq!(
             b,
