@@ -32,9 +32,7 @@ impl Block {
             desc,
         })
     }
-
 }
-
 
 #[cfg(test)]
 mod tests {
