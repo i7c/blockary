@@ -2,6 +2,7 @@ use std::fs;
 
 mod block;
 mod day_plan;
+mod markdown_access;
 
 fn main() {
     let work_content = fs::read_to_string("/Users/cmw/htmp/brain/2025-12-11.md")

@@ -1,5 +1,5 @@
 use crate::block::Block;
-use pulldown_cmark::{Event, HeadingLevel, Parser, Tag, TagEnd};
+use crate::markdown_access;
 
 #[derive(Debug)]
 pub struct DayPlan {
@@ -9,7 +9,11 @@ pub struct DayPlan {
 
 impl DayPlan {
     pub fn from_markdown(markdown_content: &str, origin: &str) -> DayPlan {
-        let blocks = read_blocks_from_markdown(markdown_content, origin);
+        let block_strings = markdown_access::read_block_strings(markdown_content);
+        let blocks = block_strings
+            .iter()
+            .map(|bs| Block::parse(origin, bs).expect(""))
+            .collect();
         DayPlan {
             origin: origin.to_string(),
             blocks: blocks,
@@ -37,58 +41,6 @@ impl DayPlan {
             blocks: blocks,
         }
     }
-}
-
-pub fn read_blocks_from_markdown(markdown_content: &str, origin: &str) -> Vec<Block> {
-    let parser = Parser::new(markdown_content);
-
-    let mut blocks: Vec<Block> = Vec::new();
-
-    let mut check_block = false;
-    let mut in_block = false;
-    let mut in_item = false;
-    let mut item_content = String::new();
-
-    for event in parser {
-        match event {
-            Event::Start(Tag::Item {}) => {
-                if in_block {
-                    item_content.clear();
-                    in_item = true;
-                }
-            }
-            Event::End(TagEnd::Item) => {
-                if in_item {
-                    blocks.push(Block::parse(origin, &item_content).expect(""));
-                    in_item = false;
-                }
-            }
-
-            Event::Start(Tag::Heading {
-                level: _,
-                id: _,
-                classes: _,
-                attrs: _,
-            }) => {
-                check_block = true;
-                in_block = false;
-            }
-            Event::End(TagEnd::Heading(HeadingLevel::H2)) => check_block = false,
-
-            Event::Text(text) => {
-                if check_block {
-                    check_block = false;
-                    in_block = text.to_lowercase().trim() == "time blocks";
-                }
-                if in_item {
-                    item_content.push_str(&text);
-                }
-            }
-            _ => {}
-        }
-    }
-
-    blocks
 }
 
 #[cfg(test)]
