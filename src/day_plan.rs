@@ -1,36 +1,31 @@
 use pulldown_cmark::{Event, HeadingLevel, Parser, Tag, TagEnd};
-use std::fs;
-use crate::block;
+use crate::block::{Block};
 
 #[derive(Debug)]
 pub struct DayPlan {
-    pub file_path: String,
     pub origin: String,
-    pub blocks: Vec<block::Block>,
+    pub blocks: Vec<Block>,
 }
 
 impl DayPlan {
-    pub fn from_file(file_path: &str, origin: &str) -> DayPlan {
-        let blocks = read_blocks(file_path, origin);
-        DayPlan { file_path: file_path.to_string(), origin: origin.to_string(), blocks: blocks }
+    pub fn from_markdown(markdown_content: &str, origin: &str) -> DayPlan {
+        let blocks = read_blocks_from_markdown(markdown_content, origin);
+        DayPlan { origin: origin.to_string(), blocks: blocks }
     }
 
     pub fn only_original_blocks(self: DayPlan) -> DayPlan {
         let orig_blocks = self.blocks.into_iter().filter(|b| b.origin == self.origin).collect();
         DayPlan {
-            file_path: self.file_path,
             origin: self.origin,
             blocks: orig_blocks,
         }
     }
 }
 
-pub fn read_blocks(file_path: &str, origin: &str) -> Vec<block::Block> {
-    let content = fs::read_to_string(file_path)
-        .expect("should have read the file");
-    let parser = Parser::new(&content);
+pub fn read_blocks_from_markdown(markdown_content: &str, origin: &str) -> Vec<Block> {
+    let parser = Parser::new(markdown_content);
 
-    let mut blocks: Vec<block::Block> = Vec::new();
+    let mut blocks: Vec<Block> = Vec::new();
 
     let mut check_block = false;
     let mut in_block = false;
@@ -47,7 +42,7 @@ pub fn read_blocks(file_path: &str, origin: &str) -> Vec<block::Block> {
             },
             Event::End(TagEnd::Item) => {
                 if in_item {
-                    blocks.push(block::Block::parse(origin, &item_content).expect(""));
+                    blocks.push(Block::parse(origin, &item_content).expect(""));
                     in_item = false;
                 }
             },
