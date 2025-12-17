@@ -41,8 +41,7 @@ mod tests {
         let b = Block::parse(
             "Personal",
             "08:00 - 09:00 (Personal) Morning Correspondence",
-        )
-        .expect("");
+        ).expect("");
 
         assert_eq!(
             b,
@@ -73,8 +72,7 @@ mod tests {
         let b = Block::parse(
             "Personal",
             "07:30 - 08:00 Morning Correspondence: talk to [[Lars]] later",
-        )
-        .expect("");
+        ).expect("");
 
         assert_eq!(
             b,
@@ -85,4 +83,53 @@ mod tests {
             }
         );
     }
-}
+
+    #[test]
+    fn test_block_without_period_or_origin() {
+        let b = Block::parse(
+            "Personal",
+            "Just some text",
+        ).expect("");
+
+        assert_eq!(
+            b,
+            Block {
+                period: "".to_string(),
+                origin: "Personal".to_string(),
+                desc: "Just some text".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn test_block_with_empty_description() {
+        let b = Block::parse(
+            "Personal",
+            "10:00 - 11:00",
+        ).expect("");
+
+        assert_eq!(
+            b,
+            Block {
+                period: "10:00 - 11:00".to_string(),
+                origin: "Personal".to_string(),
+                desc: "".to_string(),
+            }
+        );
+    }    
+    #[test]
+    fn test_period_has_only_start_time() {
+        let b = Block::parse(
+            "Personal",
+            "10:00 Do something",
+        ).expect("");
+
+        assert_eq!(
+            b,
+            Block {
+                period: "10:00".to_string(),
+                origin: "Personal".to_string(),
+                desc: "Do something".to_string(),
+            }
+        );
+    }}

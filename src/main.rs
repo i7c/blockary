@@ -4,12 +4,18 @@ mod block;
 mod day_plan;
 
 fn main() {
-    let content = fs::read_to_string("/Users/cmw/git/criptonotes/brain/journal/2025/2025-12-11.md")
+    let work_content = fs::read_to_string("/Users/cmw/htmp/brain/2025-12-11.md")
         .expect("Could not read the source file.");
 
-    let plan = day_plan::DayPlan::from_markdown(&content, "Nubank");
+    let pers_content = fs::read_to_string("/Users/cmw/htmp/cerebro/2025-12-11.md")
+        .expect("Could not read the source file.");
+    
+    let work_plan = day_plan::DayPlan::from_markdown(&work_content, "Nubank");
+    let pers_plan = day_plan::DayPlan::from_markdown(&pers_content, "Personal");
 
-    for b in plan.only_original_blocks().blocks {
-        println!("{}", b.desc);
+    let merged = work_plan.only_original_blocks().merge(pers_plan.only_original_blocks());
+
+    for b in merged.blocks {
+        println!("{} ({}) {}", b.period, b.origin, b.desc);
     }
 }
