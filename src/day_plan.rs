@@ -47,7 +47,7 @@ pub fn read_blocks_from_markdown(markdown_content: &str, origin: &str) -> Vec<Bl
                 }
             },
         
-            Event::Start(Tag::Heading{ level: HeadingLevel::H2, id: _, classes: _, attrs: _} ) => {
+            Event::Start(Tag::Heading{ level: _, id: _, classes: _, attrs: _} ) => {
                 check_block = true;
                 in_block = false;
             }
@@ -55,15 +55,14 @@ pub fn read_blocks_from_markdown(markdown_content: &str, origin: &str) -> Vec<Bl
 
         
             Event::Text(text) => {
-                if check_block && text.to_lowercase().trim() == "time blocks" {
+                if check_block {
                     check_block = false;
-                    in_block = true;
+                    in_block = text.to_lowercase().trim() == "time blocks";
                 }
                 if in_item {
                     item_content.push_str(&text);
                 }
             },
-
             _ => {},
         }
     }
