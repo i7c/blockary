@@ -14,6 +14,7 @@ impl DayPlan {
             .iter()
             .map(|bs| Block::parse(origin, bs).expect(""))
             .collect();
+
         DayPlan {
             origin: origin.to_string(),
             blocks: blocks,
