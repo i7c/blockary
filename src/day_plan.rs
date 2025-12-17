@@ -70,3 +70,33 @@ pub fn read_blocks_from_markdown(markdown_content: &str, origin: &str) -> Vec<Bl
 
     blocks
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_three_blocks() {
+        let markdown = "
+# Some Title
+## Some other section
+bla foo
+## Time Blocks
+- 08:00 - 11:00 This
+- 11:00 - 11:30 should
+- 14:00 - 15:00 appear
+# Notes
+- 10:00 - 11:00 This should not appear in the result
+";
+        let plan = DayPlan::from_markdown(&markdown, "Personal");
+
+        assert_eq!(
+            plan.blocks,
+            vec![
+                Block {period: "08:00 - 11:00".to_string(), origin: "Personal".to_string(), desc: "This".to_string()},
+                Block {period: "11:00 - 11:30".to_string(), origin: "Personal".to_string(), desc: "should".to_string()},
+                Block {period: "14:00 - 15:00".to_string(), origin: "Personal".to_string(), desc: "appear".to_string()},
+            ],
+        );
+    }
+}
