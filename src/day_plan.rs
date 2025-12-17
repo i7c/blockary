@@ -84,6 +84,7 @@ bla foo
 - 08:00 - 11:00 This
 - 11:00 - 11:30 should
 - 14:00 - 15:00 appear
+- So should this
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
@@ -95,6 +96,7 @@ bla foo
                 Block {period: "08:00 - 11:00".to_string(), origin: "Personal".to_string(), desc: "This".to_string()},
                 Block {period: "11:00 - 11:30".to_string(), origin: "Personal".to_string(), desc: "should".to_string()},
                 Block {period: "14:00 - 15:00".to_string(), origin: "Personal".to_string(), desc: "appear".to_string()},
+                Block {period: "".to_string(), origin: "Personal".to_string(), desc: "So should this".to_string()},
             ],
         );
     }
