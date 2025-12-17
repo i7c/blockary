@@ -155,7 +155,7 @@ bla foo
                 },
             ],
         };
-        
+
         let plan2 = DayPlan {
             origin: "Work".to_string(),
             blocks: vec![
