@@ -31,7 +31,7 @@ impl DayPlan {
     pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
         let mut blocks = self.blocks;
         blocks.extend(other.blocks);
-
+        blocks.sort_by(|a, b| a.period.cmp(&b.period));
         DayPlan {
             origin: self.origin,
             blocks: blocks,
@@ -184,11 +184,6 @@ bla foo
                     desc: "Morning Coffee".to_string(),
                 },
                 Block {
-                    period: "14:00 - 14:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Walk".to_string(),
-                },
-                Block {
                     period: "09:00 - 09:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Morning Brief".to_string(),
@@ -197,7 +192,13 @@ bla foo
                     period: "12:00 - 12:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Lunch".to_string(),
-                }]
+                },
+                Block {
+                    period: "14:00 - 14:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Walk".to_string(),
+                },
+            ]
         );
     }
 }
