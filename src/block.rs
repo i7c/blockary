@@ -6,11 +6,9 @@ pub struct Block {
 }
 
 impl Block {
-
     pub fn parse(default_origin: &str, input: &str) -> Result<Self, String> {
-        let trimmed_period = input.trim_start_matches(
-            |c: char| c.is_ascii_digit() || c == ':' || c == ' ' || c == '-'
-        );
+        let trimmed_period = input
+            .trim_start_matches(|c: char| c.is_ascii_digit() || c == ':' || c == ' ' || c == '-');
         let period_end = input.len() - trimmed_period.len();
         let desc_start = period_end;
 
@@ -40,7 +38,11 @@ mod tests {
 
     #[test]
     fn test_parse_good_string_with_origin_tag() {
-        let b = Block::parse("Personal", "08:00 - 09:00 (Personal) Morning Correspondence").expect("");
+        let b = Block::parse(
+            "Personal",
+            "08:00 - 09:00 (Personal) Morning Correspondence",
+        )
+        .expect("");
 
         assert_eq!(
             b,
@@ -68,7 +70,11 @@ mod tests {
 
     #[test]
     fn test_parse_good_string_without_origin_tag_but_brackets() {
-        let b = Block::parse("Personal", "07:30 - 08:00 Morning Correspondence: talk to [[Lars]] later").expect("");
+        let b = Block::parse(
+            "Personal",
+            "07:30 - 08:00 Morning Correspondence: talk to [[Lars]] later",
+        )
+        .expect("");
 
         assert_eq!(
             b,
@@ -79,6 +85,4 @@ mod tests {
             }
         );
     }
-
-
 }

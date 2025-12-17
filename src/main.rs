@@ -12,6 +12,4 @@ fn main() {
     for b in plan.only_original_blocks().blocks {
         println!("{}", b.desc);
     }
-
-
 }
