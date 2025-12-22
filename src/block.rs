@@ -147,10 +147,7 @@ mod tests {
         assert_eq!(
             b.to_block_string(true),
             "- 10:00 - 11:00 (Personal) Buy Coffee"
-          );
-        assert_eq!(
-            b.to_block_string(false),
-            "- 10:00 - 11:00 Buy Coffee"
-          );
+        );
+        assert_eq!(b.to_block_string(false), "- 10:00 - 11:00 Buy Coffee");
     }
 }

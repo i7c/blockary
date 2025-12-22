@@ -9,17 +9,16 @@ pub struct Origin {
 
 #[derive(Debug, Deserialize)]
 pub struct Config {
-    pub origins: HashMap<String, Origin>
+    pub origins: HashMap<String, Origin>,
 }
 
 pub fn load(toml_str: &str) -> Config {
-    let config: Config = match  toml::from_str(toml_str) {
+    let config: Config = match toml::from_str(toml_str) {
         Ok(cfg) => cfg,
         Err(err) => panic!("Could not load the config file {}", err),
     };
     config
 }
-
 
 #[cfg(test)]
 mod tests {
