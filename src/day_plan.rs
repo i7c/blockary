@@ -21,6 +21,16 @@ impl DayPlan {
         }
     }
 
+    pub fn update_markdown(self: &DayPlan, markdown_content: &str) -> String {
+        let block_strings: Vec<String> = self
+            .blocks
+            .iter()
+            .map(|b| b.to_block_string(b.origin != self.origin))
+            .collect();
+
+        markdown_access::update_block_strings(&block_strings, markdown_content)
+    }
+
     pub fn only_original_blocks(self: DayPlan) -> DayPlan {
         let orig_blocks = self
             .blocks
@@ -31,6 +41,10 @@ impl DayPlan {
             origin: self.origin,
             blocks: orig_blocks,
         }
+    }
+
+    pub fn sort_blocks(self: &mut DayPlan) {
+        self.blocks.sort_by(|a, b| a.period.cmp(&b.period));
     }
 
     pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
@@ -152,6 +166,44 @@ bla foo
                     desc: "Walk".to_string(),
                 },
             ]
+        );
+    }
+
+    #[test]
+    fn test_update_block_strings_in_markdown() {
+        let markdown = "
+# Some Title
+## Some other section
+bla foo
+## Time Blocks
+- 08:00 - 11:00 This
+- 11:00 - 11:30 should
+- 14:00 - 15:00 appear
+# Notes
+- 10:00 - 11:00 This should not appear in the result
+";
+        let mut plan = DayPlan::from_markdown(&markdown, "Personal");
+        plan.blocks.push(Block {
+            period: "12:00".to_string(),
+            origin: "Work".to_string(),
+            desc: "Lunch".to_string(),
+        });
+        plan.sort_blocks();
+
+        assert_eq!(
+            plan.update_markdown(markdown),
+            "
+# Some Title
+## Some other section
+bla foo
+## Time Blocks
+- 08:00 - 11:00 This
+- 11:00 - 11:30 should
+- 12:00 (Work) Lunch
+- 14:00 - 15:00 appear
+# Notes
+- 10:00 - 11:00 This should not appear in the result
+"
         );
     }
 }
