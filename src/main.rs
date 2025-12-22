@@ -1,5 +1,6 @@
 use std::fs;
 
+mod blockary_cfg;
 mod block;
 mod day_plan;
 mod markdown_access;

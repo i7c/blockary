@@ -2,17 +2,17 @@ use serde::Deserialize;
 use std::collections::HashMap;
 
 #[derive(Debug, Deserialize)]
-struct Origin {
-    path: String,
-    name: String,
+pub struct Origin {
+    pub path: String,
+    pub name: String,
 }
 
 #[derive(Debug, Deserialize)]
-struct Config {
+pub struct Config {
     pub origins: HashMap<String, Origin>
 }
 
-fn load(toml_str: &str) -> Config {
+pub fn load(toml_str: &str) -> Config {
     let config: Config = match  toml::from_str(toml_str) {
         Ok(cfg) => cfg,
         Err(err) => panic!("Could not load the config file {}", err),
