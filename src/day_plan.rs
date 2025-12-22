@@ -1,7 +1,7 @@
 use crate::block::Block;
 use crate::markdown_access;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DayPlan {
     pub origin: String,
     pub blocks: Vec<Block>,
@@ -33,12 +33,12 @@ impl DayPlan {
         }
     }
 
-    pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
-        let mut blocks = self.blocks;
-        blocks.extend(other.blocks);
+    pub fn merge(self: &DayPlan, other: &DayPlan) -> DayPlan {
+        let mut blocks = self.blocks.clone();
+        blocks.extend(other.blocks.clone());
         blocks.sort_by(|a, b| a.period.cmp(&b.period));
         DayPlan {
-            origin: self.origin,
+            origin: self.origin.clone(),
             blocks: blocks,
         }
     }
