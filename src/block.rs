@@ -30,6 +30,14 @@ impl Block {
             desc,
         })
     }
+
+    pub fn to_block_string(self: &Block, include_origin: bool) -> String {
+        if include_origin {
+            format!("- {} ({}) {}", self.period, self.origin, self.desc)
+        } else {
+            format!("- {} {}", self.period, self.desc)
+        }
+    }
 }
 
 #[cfg(test)]
@@ -113,6 +121,7 @@ mod tests {
             }
         );
     }
+
     #[test]
     fn test_period_has_only_start_time() {
         let b = Block::parse("Personal", "10:00 Do something").expect("");
@@ -125,5 +134,23 @@ mod tests {
                 desc: "Do something".to_string(),
             }
         );
+    }
+
+    #[test]
+    fn test_write_block_string() {
+        let b = Block {
+            period: "10:00 - 11:00".to_string(),
+            origin: "Personal".to_string(),
+            desc: "Buy Coffee".to_string(),
+        };
+
+        assert_eq!(
+            b.to_block_string(true),
+            "- 10:00 - 11:00 (Personal) Buy Coffee"
+          );
+        assert_eq!(
+            b.to_block_string(false),
+            "- 10:00 - 11:00 Buy Coffee"
+          );
     }
 }
