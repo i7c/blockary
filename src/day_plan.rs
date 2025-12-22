@@ -33,12 +33,12 @@ impl DayPlan {
         }
     }
 
-    pub fn merge(self: &DayPlan, other: &DayPlan) -> DayPlan {
-        let mut blocks = self.blocks.clone();
-        blocks.extend(other.blocks.clone());
+    pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
+        let mut blocks = self.blocks;
+        blocks.extend(other.blocks);
         blocks.sort_by(|a, b| a.period.cmp(&b.period));
         DayPlan {
-            origin: self.origin.clone(),
+            origin: self.origin,
             blocks: blocks,
         }
     }
