@@ -58,6 +58,17 @@ impl DayPlan {
     }
 }
 
+pub fn merge_many(mut original_day_plans: Vec<DayPlan>) -> DayPlan {
+    let mut merged = DayPlan {
+        origin: "".to_string(),
+        blocks: Vec::new(),
+    };
+    while let Some(next) = original_day_plans.pop() {
+        merged = merged.merge(next);
+    }
+    merged
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -205,5 +216,49 @@ bla foo
 - 10:00 - 11:00 This should not appear in the result
 "
         );
+    }
+
+    #[test]
+    fn test_merge_many() {
+        let dp1 = DayPlan {
+            origin: "dp1".to_string(),
+            blocks: vec![
+                Block {
+                    period: "08:00 - 11:00".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Morning Coffee".to_string(),
+                },
+                Block {
+                    period: "14:00 - 14:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Walk".to_string(),
+                },
+            ],
+        };
+
+        let dp2 = DayPlan {
+            origin: "dp2".to_string(),
+            blocks: vec![
+                Block {
+                    period: "09:00 - 09:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Morning Brief".to_string(),
+                },
+                Block {
+                    period: "12:00 - 12:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Lunch".to_string(),
+                },
+            ],
+        };
+
+        let merged = merge_many(vec![dp1, dp2]);
+
+        assert_eq!(merged.origin, "");
+        assert_eq!(merged.blocks.len(), 4);
+        assert_eq!(merged.blocks.get(0).unwrap().period, "08:00 - 11:00");
+        assert_eq!(merged.blocks.get(1).unwrap().period, "09:00 - 09:30");
+        assert_eq!(merged.blocks.get(2).unwrap().period, "12:00 - 12:30");
+        assert_eq!(merged.blocks.get(3).unwrap().period, "14:00 - 14:30");
     }
 }
