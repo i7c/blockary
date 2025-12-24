@@ -35,8 +35,11 @@ impl DayPlan {
         let base_dir = Path::new(&self.base_dir);
         let abs_path = Path::new(&self.abs_path);
 
-        abs_path.strip_prefix(base_dir);
-        "".to_string()
+        abs_path.strip_prefix(base_dir)
+            .expect("Base path does not match the absolute path")
+            .to_str()
+            .unwrap()
+            .to_string()
     }
 
     pub fn update_markdown(self: &DayPlan, markdown_content: &str) -> String {
