@@ -35,7 +35,8 @@ impl DayPlan {
         let base_dir = Path::new(&self.base_dir);
         let abs_path = Path::new(&self.abs_path);
 
-        abs_path.strip_prefix(base_dir)
+        abs_path
+            .strip_prefix(base_dir)
             .expect("Base path does not match the absolute path")
             .to_str()
             .unwrap()
@@ -247,6 +248,19 @@ bla foo
             "Work",
             "/home/foo/notes/2025/2025-11-12.md",
             "/home/foo/notes",
+        );
+
+        assert_eq!(day_plan.note_id(), "2025/2025-11-12.md");
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_day_plan_file_path_with_wrong_base_dir() {
+        let day_plan = DayPlan::from_markdown(
+            "",
+            "Work",
+            "/home/foo/notes/2025/2025-11-12.md",
+            "/home/foo/not-parent",
         );
 
         assert_eq!(day_plan.note_id(), "2025/2025-11-12.md");
