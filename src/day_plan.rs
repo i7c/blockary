@@ -11,6 +11,18 @@ pub struct DayPlan {
 }
 
 impl DayPlan {
+    pub fn note_id(self: &DayPlan) -> String {
+        let base_dir = Path::new(&self.base_dir);
+        let abs_path = Path::new(&self.abs_path);
+
+        abs_path
+            .strip_prefix(base_dir)
+            .expect("Base path does not match the absolute path")
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+
     pub fn from_markdown(
         markdown_content: &str,
         origin: &str,
@@ -29,18 +41,6 @@ impl DayPlan {
             abs_path: abs_path.to_string(),
             base_dir: base_dir.to_string(),
         }
-    }
-
-    pub fn note_id(self: &DayPlan) -> String {
-        let base_dir = Path::new(&self.base_dir);
-        let abs_path = Path::new(&self.abs_path);
-
-        abs_path
-            .strip_prefix(base_dir)
-            .expect("Base path does not match the absolute path")
-            .to_str()
-            .unwrap()
-            .to_string()
     }
 
     pub fn update_markdown(self: &DayPlan, markdown_content: &str) -> String {
