@@ -1,14 +1,22 @@
 use crate::block::Block;
 use crate::markdown_access;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
 pub struct DayPlan {
     pub origin: String,
     pub blocks: Vec<Block>,
+    abs_path: String,
+    base_dir: String,
 }
 
 impl DayPlan {
-    pub fn from_markdown(markdown_content: &str, origin: &str) -> DayPlan {
+    pub fn from_markdown(
+        markdown_content: &str,
+        origin: &str,
+        abs_path: &str,
+        base_dir: &str,
+    ) -> DayPlan {
         let block_strings = markdown_access::read_block_strings(markdown_content);
         let blocks = block_strings
             .iter()
@@ -18,7 +26,17 @@ impl DayPlan {
         DayPlan {
             origin: origin.to_string(),
             blocks: blocks,
+            abs_path: abs_path.to_string(),
+            base_dir: base_dir.to_string(),
         }
+    }
+
+    pub fn note_id(self: &DayPlan) -> String {
+        let base_dir = Path::new(&self.base_dir);
+        let abs_path = Path::new(&self.abs_path);
+
+        abs_path.strip_prefix(base_dir);
+        "".to_string()
     }
 
     pub fn update_markdown(self: &DayPlan, markdown_content: &str) -> String {
@@ -40,11 +58,17 @@ impl DayPlan {
         DayPlan {
             origin: self.origin,
             blocks: orig_blocks,
+            abs_path: self.abs_path,
+            base_dir: self.base_dir,
         }
     }
 
     pub fn sort_blocks(self: &mut DayPlan) {
         self.blocks.sort_by(|a, b| a.period.cmp(&b.period));
+    }
+
+    pub fn set_origin(self: &mut DayPlan, origin: &str) {
+        self.origin = origin.to_string();
     }
 
     pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
@@ -54,19 +78,10 @@ impl DayPlan {
         DayPlan {
             origin: self.origin,
             blocks: blocks,
+            abs_path: self.abs_path,
+            base_dir: self.base_dir,
         }
     }
-}
-
-pub fn merge_many(mut original_day_plans: Vec<DayPlan>) -> DayPlan {
-    let mut merged = DayPlan {
-        origin: "".to_string(),
-        blocks: Vec::new(),
-    };
-    while let Some(next) = original_day_plans.pop() {
-        merged = merged.merge(next);
-    }
-    merged
 }
 
 #[cfg(test)]
@@ -87,7 +102,7 @@ bla foo
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
-        let plan = DayPlan::from_markdown(&markdown, "Personal");
+        let plan = DayPlan::from_markdown(&markdown, "Personal", "/base/path/a.md", "/base/path");
 
         assert_eq!(
             plan.blocks,
@@ -120,6 +135,8 @@ bla foo
     fn test_merge_two_plans() {
         let plan1 = DayPlan {
             origin: "Personal".to_string(),
+            abs_path: "/a/b".to_string(),
+            base_dir: "/a".to_string(),
             blocks: vec![
                 Block {
                     period: "08:00 - 11:00".to_string(),
@@ -136,6 +153,8 @@ bla foo
 
         let plan2 = DayPlan {
             origin: "Work".to_string(),
+            abs_path: "/b/b".to_string(),
+            base_dir: "/b".to_string(),
             blocks: vec![
                 Block {
                     period: "09:00 - 09:30".to_string(),
@@ -193,7 +212,7 @@ bla foo
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
-        let mut plan = DayPlan::from_markdown(&markdown, "Personal");
+        let mut plan = DayPlan::from_markdown(&markdown, "Personal", "/a/b", "/a");
         plan.blocks.push(Block {
             period: "12:00".to_string(),
             origin: "Work".to_string(),
@@ -219,46 +238,14 @@ bla foo
     }
 
     #[test]
-    fn test_merge_many() {
-        let dp1 = DayPlan {
-            origin: "dp1".to_string(),
-            blocks: vec![
-                Block {
-                    period: "08:00 - 11:00".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Morning Coffee".to_string(),
-                },
-                Block {
-                    period: "14:00 - 14:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Walk".to_string(),
-                },
-            ],
-        };
+    fn test_day_plan_file_path() {
+        let day_plan = DayPlan::from_markdown(
+            "",
+            "Work",
+            "/home/foo/notes/2025/2025-11-12.md",
+            "/home/foo/notes",
+        );
 
-        let dp2 = DayPlan {
-            origin: "dp2".to_string(),
-            blocks: vec![
-                Block {
-                    period: "09:00 - 09:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Morning Brief".to_string(),
-                },
-                Block {
-                    period: "12:00 - 12:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Lunch".to_string(),
-                },
-            ],
-        };
-
-        let merged = merge_many(vec![dp1, dp2]);
-
-        assert_eq!(merged.origin, "");
-        assert_eq!(merged.blocks.len(), 4);
-        assert_eq!(merged.blocks.get(0).unwrap().period, "08:00 - 11:00");
-        assert_eq!(merged.blocks.get(1).unwrap().period, "09:00 - 09:30");
-        assert_eq!(merged.blocks.get(2).unwrap().period, "12:00 - 12:30");
-        assert_eq!(merged.blocks.get(3).unwrap().period, "14:00 - 14:30");
+        assert_eq!(day_plan.note_id(), "2025/2025-11-12.md");
     }
 }
