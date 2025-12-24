@@ -69,6 +69,15 @@ impl DayPlan {
         self.origin = origin.to_string();
     }
 
+    pub fn with_updated_blocks(self: DayPlan, blocks: &Vec<Block>) -> DayPlan {
+        DayPlan {
+            origin: self.origin,
+            blocks: blocks.iter().cloned().collect(),
+            abs_path: self.abs_path,
+            base_dir: self.base_dir,
+        }
+    }
+
     pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
         let mut blocks = self.blocks;
         blocks.extend(other.blocks);
