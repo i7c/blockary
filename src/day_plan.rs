@@ -53,18 +53,13 @@ impl DayPlan {
         markdown_access::update_block_strings(&block_strings, markdown_content)
     }
 
-    pub fn only_original_blocks(self: DayPlan) -> DayPlan {
-        let orig_blocks = self
+    pub fn only_original_blocks(self: &DayPlan) -> Vec<Block> {
+        self
             .blocks
-            .into_iter()
+            .iter()
+            .cloned()
             .filter(|b| b.origin == self.origin)
-            .collect();
-        DayPlan {
-            origin: self.origin,
-            blocks: orig_blocks,
-            abs_path: self.abs_path,
-            base_dir: self.base_dir,
-        }
+            .collect()
     }
 
     pub fn sort_blocks(self: &mut DayPlan) {
@@ -264,5 +259,31 @@ bla foo
         );
 
         day_plan.note_id();
+    }
+
+    #[test]
+    fn test_get_original_blocks_only() {
+        let day_plan = DayPlan {
+            origin: "Work".to_string(),
+            abs_path: "/work/20.md".to_string(),
+            base_dir: "/work".to_string(),
+            blocks: vec![
+                Block {
+                    period: "08:00 - 10:30".to_string(),
+                    origin: "Work".to_string(),
+                    desc: "Emails".to_string(),
+                },
+                Block {
+                    period: "14:00 - 14:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Walk".to_string(),
+                }
+            ],
+        };
+
+        let blocks = day_plan.only_original_blocks();
+
+        assert_eq!(blocks.len(), 1);
+        assert_eq!(blocks.get(0).unwrap().desc, "Emails");
     }
 }
