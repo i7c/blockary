@@ -27,10 +27,12 @@ fn main() {
             let markdown_content = fs::read_to_string(&plan.abs_path);
             match markdown_content {
                 Ok(c) => {
-                    let updated_markdown_content = plan.with_updated_blocks(&synced_blocks);
+                    let mut updated_plan = plan.with_updated_blocks(&synced_blocks);
+                    updated_plan.sort_blocks();
+                    println!("Write {}", &updated_plan.abs_path);
                     fs::write(
-                        &updated_markdown_content.abs_path,
-                        updated_markdown_content.update_markdown(&c),
+                        &updated_plan.abs_path,
+                        updated_plan.update_markdown(&c),
                     )
                     .expect(
                         "Could not write file. For safety, will cancel all further operations.",
