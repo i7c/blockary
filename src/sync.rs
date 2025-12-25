@@ -44,7 +44,7 @@ pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
         .collect()
 }
 
-fn day_plans_by_note_id(all_day_plans: Vec<DayPlan>) -> HashMap<String, Vec<DayPlan>> {
+pub fn day_plans_by_note_id(all_day_plans: Vec<DayPlan>) -> HashMap<String, Vec<DayPlan>> {
     let mut day_plans_by_note_id: HashMap<String, Vec<DayPlan>> = HashMap::new();
     for dp in all_day_plans {
         day_plans_by_note_id

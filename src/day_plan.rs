@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 pub struct DayPlan {
     pub origin: String,
     pub blocks: Vec<Block>,
-    abs_path: String,
+    pub abs_path: String,
     base_dir: String,
 }
 
