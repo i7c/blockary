@@ -163,6 +163,7 @@ bla foo
 - 11:00 - 11:30 should
 - 14:00 - 15:00 appear
 - So should this
+
 # Notes
 - 10:00 - 11:00 What is this?
 ";
@@ -196,6 +197,28 @@ bla foo
 "
         );
     }
+
+    #[test]
+    fn test_update_section_lines_with_mising_section() {
+        let markdown = "
+# Some Title
+## Some other section
+```clojure
+(+ 1 2)
+```
+# Notes
+- 10:00 - 11:00 What is this?
+";
+        let section_lines = vec![
+            "- 10:00 - 11:00 (Personal) -hidden-".to_string(),
+            "- 11:00 - 12:00 Meeting".to_string(),
+        ];
+
+        let updated_markdown = update_section_lines(&section_lines, "Time Blocks", markdown);
+
+        assert_eq!(updated_markdown, markdown);
+    }
+
 
     #[test]
     fn test_check_for_heading() {
