@@ -12,16 +12,24 @@ pub fn line_is_any_heading(line: &str) -> bool {
     return line.trim().starts_with("#");
 }
 
-pub fn update_block_strings(block_strings: &Vec<String>, markdown_content: &str) -> String {
+/// Updates the content in `markdown_content`'s first markdown section
+/// with title `section_title`. Returns the updated markdown as a
+/// string. If no such section can be found, nothing is changed in and
+/// the returned string is identical with markdown_content.
+pub fn update_section_lines(
+    section_lines: &Vec<String>,
+    section_title: &str,
+    markdown_content: &str,
+) -> String {
     let mut output_lines: Vec<String> = Vec::new();
 
     let mut under_heading = false;
     for l in markdown_content.lines() {
-        if line_is_heading(l, "Time Blocks") {
+        if line_is_heading(l, section_title) {
             under_heading = true;
             output_lines.push(l.to_string());
             output_lines.extend(
-                block_strings
+                section_lines
                     .iter()
                     .map(|s| s.to_owned())
                     .collect::<Vec<String>>(),
@@ -163,7 +171,7 @@ bla foo
             "- 11:00 - 12:00 Meeting".to_string(),
         ];
 
-        let updated_markdown = update_block_strings(&block_strings, markdown);
+        let updated_markdown = update_section_lines(&block_strings, "Time Blocks", markdown);
 
         assert_eq!(
             updated_markdown,

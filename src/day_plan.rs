@@ -50,7 +50,7 @@ impl DayPlan {
             .map(|b| b.to_block_string(b.origin != self.origin))
             .collect();
 
-        markdown_access::update_block_strings(&block_strings, markdown_content)
+        markdown_access::update_section_lines(&block_strings, "Time Blocks", markdown_content)
     }
 
     pub fn only_original_blocks(self: &DayPlan) -> Vec<Block> {

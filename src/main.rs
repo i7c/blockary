@@ -30,11 +30,7 @@ fn main() {
                     let mut updated_plan = plan.with_updated_blocks(&synced_blocks);
                     updated_plan.sort_blocks();
                     println!("Write {}", &updated_plan.abs_path);
-                    fs::write(
-                        &updated_plan.abs_path,
-                        updated_plan.update_markdown(&c),
-                    )
-                    .expect(
+                    fs::write(&updated_plan.abs_path, updated_plan.update_markdown(&c)).expect(
                         "Could not write file. For safety, will cancel all further operations.",
                     );
                 }
