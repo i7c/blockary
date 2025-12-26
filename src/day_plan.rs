@@ -29,7 +29,8 @@ impl DayPlan {
         abs_path: &str,
         base_dir: &str,
     ) -> DayPlan {
-        let block_strings = markdown_access::read_block_strings(markdown_content);
+        let block_strings =
+            markdown_access::read_items_under_section(markdown_content, "Time Blocks");
         let blocks = block_strings
             .iter()
             .map(|bs| Block::parse(origin, bs).expect(""))

@@ -1,6 +1,6 @@
 use pulldown_cmark::{Event, HeadingLevel, Parser, Tag, TagEnd};
 
-pub fn line_is_heading(line: &str, heading: &str) -> bool {
+fn line_is_heading(line: &str, heading: &str) -> bool {
     if line.trim().starts_with("#") {
         line.trim_start_matches(['#', ' ']) == heading
     } else {
@@ -8,14 +8,18 @@ pub fn line_is_heading(line: &str, heading: &str) -> bool {
     }
 }
 
-pub fn line_is_any_heading(line: &str) -> bool {
+fn line_is_any_heading(line: &str) -> bool {
     return line.trim().starts_with("#");
 }
 
-/// Updates the content in `markdown_content`'s first markdown section
-/// with title `section_title`. Returns the updated markdown as a
+/// Updates the content in all of `markdown_content`'s sections with
+/// title `section_title`. Returns the updated markdown as a
 /// string. If no such section can be found, nothing is changed in and
 /// the returned string is identical with markdown_content.
+///
+/// This function does not actually parse markdown, so in case there
+/// appears to be a section heading, e.g. within a code section, it
+/// will update the content accordingly.
 pub fn update_section_lines(
     section_lines: &Vec<String>,
     section_title: &str,
@@ -51,7 +55,9 @@ pub fn update_section_lines(
     output_lines.join("\n")
 }
 
-pub fn read_block_strings(markdown_content: &str) -> Vec<String> {
+/// Parses markdown_content and returns all list items found under the
+/// section with title `section_title`.
+pub fn read_items_under_section(markdown_content: &str, section_title: &str) -> Vec<String> {
     let parser = Parser::new(markdown_content);
 
     let mut blocks: Vec<String> = Vec::new();
@@ -90,7 +96,7 @@ pub fn read_block_strings(markdown_content: &str) -> Vec<String> {
             Event::Text(text) => {
                 if check_block {
                     check_block = false;
-                    in_block = text.to_lowercase().trim() == "time blocks";
+                    in_block = text.to_lowercase().trim() == section_title.trim().to_lowercase();
                 }
                 if in_item {
                     item_content.push_str(&text);
@@ -130,7 +136,7 @@ bla foo
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
-        let block_strings = read_block_strings(markdown);
+        let block_strings = read_items_under_section(markdown, "Time blocks");
 
         assert_eq!(
             block_strings,
@@ -218,7 +224,6 @@ bla foo
 
         assert_eq!(updated_markdown, markdown);
     }
-
 
     #[test]
     fn test_check_for_heading() {
