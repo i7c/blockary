@@ -52,6 +52,6 @@ mod tests {
         path = "/home/foo/worknotes"
     "#;
 
-        let cfg = load(toml_str);
+        let _cfg = load(toml_str);
     }
 }

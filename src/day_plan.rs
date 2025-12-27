@@ -1,6 +1,6 @@
 use crate::block::Block;
 use crate::markdown_access;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Debug, Clone)]
 pub struct DayPlan {

@@ -1,4 +1,3 @@
-use day_plan::DayPlan;
 use std::env;
 use std::fs;
 

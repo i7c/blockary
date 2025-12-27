@@ -1,5 +1,5 @@
-use crate::blockary_cfg::{Config, Origin};
-use crate::day_plan::{self, DayPlan};
+use crate::blockary_cfg::Config;
+use crate::day_plan::DayPlan;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
