@@ -78,10 +78,8 @@ impl DayPlan {
         blocks.extend(other.blocks);
         blocks.sort_by(|a, b| a.period.cmp(&b.period));
         DayPlan {
-            origin: self.origin,
             blocks: blocks,
-            abs_path: self.abs_path,
-            base_dir: self.base_dir,
+            ..self
         }
     }
 }
