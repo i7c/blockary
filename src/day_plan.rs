@@ -68,10 +68,8 @@ impl DayPlan {
 
     pub fn with_updated_blocks(self: DayPlan, blocks: &Vec<Block>) -> DayPlan {
         DayPlan {
-            origin: self.origin,
             blocks: blocks.iter().cloned().collect(),
-            abs_path: self.abs_path,
-            base_dir: self.base_dir,
+            ..self
         }
     }
 
@@ -345,5 +343,39 @@ bla foo
         assert_eq!(blocks.get(0).unwrap().desc, "Emails");
         assert_eq!(blocks.get(1).unwrap().origin, "Personal");
         assert_eq!(blocks.get(1).unwrap().desc, "Make coffee");
+    }
+
+    #[test]
+    fn test_update_blocks() {
+        let dp1 = DayPlan {
+            origin: "Work".to_string(),
+            abs_path: "/work/20.md".to_string(),
+            base_dir: "/work".to_string(),
+            blocks: vec![
+                Block {
+                    period: "08:00 - 10:30".to_string(),
+                    origin: "Work".to_string(),
+                    desc: "Emails".to_string(),
+                },
+                Block {
+                    period: "14:00 - 14:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Walk".to_string(),
+                },
+            ],
+        };
+
+        let updated = dp1.with_updated_blocks(&vec![Block {
+            period: "00:00 - 05:30".to_string(),
+            origin: "Personal".to_string(),
+            desc: "Sleep".to_string(),
+        }]);
+
+        assert_eq!(updated.abs_path, "/work/20.md");
+        assert_eq!(updated.base_dir, "/work");
+        assert_eq!(updated.origin, "Work");
+        assert_eq!(updated.blocks.len(), 1);
+        assert_eq!(updated.blocks.get(0).unwrap().origin, "Personal");
+        assert_eq!(updated.blocks.get(0).unwrap().desc, "Sleep");
     }
 }
