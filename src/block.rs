@@ -1,3 +1,8 @@
+use regex::Regex;
+
+const BLOCKSTRING_REGEX: &str =
+    r"^\s*(\d{2}:\d{2}\s*-\s*\d{2}:\d{2}|\d{2}:\d{2})?\s*(\(([^\)]*)\))?\s*(.*)";
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Block {
     pub period: String,
@@ -7,28 +12,24 @@ pub struct Block {
 
 impl Block {
     pub fn parse(default_origin: &str, input: &str) -> Result<Self, String> {
-        let trimmed_period = input
-            .trim_start_matches(|c: char| c.is_ascii_digit() || c == ':' || c == ' ' || c == '-');
-        let period_end = input.len() - trimmed_period.len();
-        let desc_start = period_end;
+        match Regex::new(BLOCKSTRING_REGEX).unwrap().captures(&input) {
+            Some(matches) => {
+                let period = matches.get(1).map(|m| m.as_str().to_string());
+                let origin = matches.get(3).map(|m| m.as_str().to_string());
+                let desc = matches.get(4).map(|m| m.as_str().to_string());
 
-        let period = input[..period_end].trim().to_string();
-
-        let mut description = input[desc_start..].trim_start();
-        let mut origin = default_origin.to_string();
-        if description.starts_with('(') {
-            if let Some(end_bracket_index) = description.find(')') {
-                origin = description[1..end_bracket_index].trim().to_string();
-                description = description[end_bracket_index + 1..].trim_start();
+                if let Some(desc) = desc {
+                    return Ok(Block {
+                        period: period.unwrap_or("".to_string()),
+                        origin: origin.unwrap_or(default_origin.to_string()),
+                        desc,
+                    });
+                } else {
+                    return Err("Blockstring must have at least a description".to_string());
+                }
             }
+            None => return Err("Not a valid block string".to_string()),
         }
-        let desc = description.to_string();
-
-        Ok(Block {
-            period,
-            origin,
-            desc,
-        })
     }
 
     pub fn to_block_string(self: &Block, include_origin: bool) -> String {
@@ -90,6 +91,20 @@ mod tests {
                 period: "07:30 - 08:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence: talk to [[Lars]] later".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_good_string_that_starts_with_digit() {
+        let b = Block::parse("Personal", "07:30 - 08:00 1on1 with Hans").expect("");
+
+        assert_eq!(
+            b,
+            Block {
+                period: "07:30 - 08:00".to_string(),
+                origin: "Personal".to_string(),
+                desc: "1on1 with Hans".to_string(),
             }
         );
     }
