@@ -33,7 +33,7 @@ impl DayPlan {
             markdown_access::read_items_under_section(markdown_content, "Time Blocks");
         let blocks = block_strings
             .iter()
-            .map(|bs| Block::parse(origin, bs).expect(""))
+            .map(|bs| Block::parse_block_string(origin, bs).expect(""))
             .collect();
 
         DayPlan {
@@ -63,7 +63,7 @@ impl DayPlan {
     }
 
     pub fn sort_blocks(self: &mut DayPlan) {
-        self.blocks.sort_by(|a, b| a.period.cmp(&b.period));
+        self.blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
     }
 
     pub fn with_updated_blocks(self: DayPlan, blocks: &Vec<Block>) -> DayPlan {
@@ -76,7 +76,7 @@ impl DayPlan {
     pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
         let mut blocks = self.blocks;
         blocks.extend(other.blocks);
-        blocks.sort_by(|a, b| a.period.cmp(&b.period));
+        blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
         DayPlan {
             blocks: blocks,
             ..self
@@ -116,22 +116,22 @@ bla foo
             plan.blocks,
             vec![
                 Block {
-                    period: "08:00 - 11:00".to_string(),
+                    period_str: "08:00 - 11:00".to_string(),
                     origin: "Personal".to_string(),
                     desc: "This".to_string()
                 },
                 Block {
-                    period: "11:00 - 11:30".to_string(),
+                    period_str: "11:00 - 11:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "should".to_string()
                 },
                 Block {
-                    period: "14:00 - 15:00".to_string(),
+                    period_str: "14:00 - 15:00".to_string(),
                     origin: "Personal".to_string(),
                     desc: "appear".to_string()
                 },
                 Block {
-                    period: "".to_string(),
+                    period_str: "".to_string(),
                     origin: "Personal".to_string(),
                     desc: "So should this".to_string()
                 },
@@ -147,12 +147,12 @@ bla foo
             base_dir: "/a".to_string(),
             blocks: vec![
                 Block {
-                    period: "08:00 - 11:00".to_string(),
+                    period_str: "08:00 - 11:00".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Morning Coffee".to_string(),
                 },
                 Block {
-                    period: "14:00 - 14:30".to_string(),
+                    period_str: "14:00 - 14:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Walk".to_string(),
                 },
@@ -165,12 +165,12 @@ bla foo
             base_dir: "/b".to_string(),
             blocks: vec![
                 Block {
-                    period: "09:00 - 09:30".to_string(),
+                    period_str: "09:00 - 09:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Morning Brief".to_string(),
                 },
                 Block {
-                    period: "12:00 - 12:30".to_string(),
+                    period_str: "12:00 - 12:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Lunch".to_string(),
                 },
@@ -184,22 +184,22 @@ bla foo
             merged.blocks,
             vec![
                 Block {
-                    period: "08:00 - 11:00".to_string(),
+                    period_str: "08:00 - 11:00".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Morning Coffee".to_string(),
                 },
                 Block {
-                    period: "09:00 - 09:30".to_string(),
+                    period_str: "09:00 - 09:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Morning Brief".to_string(),
                 },
                 Block {
-                    period: "12:00 - 12:30".to_string(),
+                    period_str: "12:00 - 12:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Lunch".to_string(),
                 },
                 Block {
-                    period: "14:00 - 14:30".to_string(),
+                    period_str: "14:00 - 14:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Walk".to_string(),
                 },
@@ -222,7 +222,7 @@ bla foo
 ";
         let mut plan = DayPlan::from_markdown(&markdown, "Personal", "/a/b", "/a");
         plan.blocks.push(Block {
-            period: "12:00".to_string(),
+            period_str: "12:00".to_string(),
             origin: "Work".to_string(),
             desc: "Lunch".to_string(),
         });
@@ -278,12 +278,12 @@ bla foo
             base_dir: "/work".to_string(),
             blocks: vec![
                 Block {
-                    period: "08:00 - 10:30".to_string(),
+                    period_str: "08:00 - 10:30".to_string(),
                     origin: "Work".to_string(),
                     desc: "Emails".to_string(),
                 },
                 Block {
-                    period: "14:00 - 14:30".to_string(),
+                    period_str: "14:00 - 14:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Walk".to_string(),
                 },
@@ -304,12 +304,12 @@ bla foo
             base_dir: "/work".to_string(),
             blocks: vec![
                 Block {
-                    period: "08:00 - 10:30".to_string(),
+                    period_str: "08:00 - 10:30".to_string(),
                     origin: "Work".to_string(),
                     desc: "Emails".to_string(),
                 },
                 Block {
-                    period: "14:00 - 14:30".to_string(),
+                    period_str: "14:00 - 14:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Walk".to_string(),
                 },
@@ -322,12 +322,12 @@ bla foo
             base_dir: "/work".to_string(),
             blocks: vec![
                 Block {
-                    period: "09:00 - 10:00".to_string(),
+                    period_str: "09:00 - 10:00".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Make coffee".to_string(),
                 },
                 Block {
-                    period: "14:00 - 14:30".to_string(),
+                    period_str: "14:00 - 14:30".to_string(),
                     origin: "Hobby".to_string(),
                     desc: "Walk".to_string(),
                 },
@@ -351,12 +351,12 @@ bla foo
             base_dir: "/work".to_string(),
             blocks: vec![
                 Block {
-                    period: "08:00 - 10:30".to_string(),
+                    period_str: "08:00 - 10:30".to_string(),
                     origin: "Work".to_string(),
                     desc: "Emails".to_string(),
                 },
                 Block {
-                    period: "14:00 - 14:30".to_string(),
+                    period_str: "14:00 - 14:30".to_string(),
                     origin: "Personal".to_string(),
                     desc: "Walk".to_string(),
                 },
@@ -364,7 +364,7 @@ bla foo
         };
 
         let updated = dp1.with_updated_blocks(&vec![Block {
-            period: "00:00 - 05:30".to_string(),
+            period_str: "00:00 - 05:30".to_string(),
             origin: "Personal".to_string(),
             desc: "Sleep".to_string(),
         }]);

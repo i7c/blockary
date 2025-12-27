@@ -5,13 +5,13 @@ const BLOCKSTRING_REGEX: &str =
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Block {
-    pub period: String,
+    pub period_str: String,
     pub origin: String,
     pub desc: String,
 }
 
 impl Block {
-    pub fn parse(default_origin: &str, input: &str) -> Result<Self, String> {
+    pub fn parse_block_string(default_origin: &str, input: &str) -> Result<Self, String> {
         match Regex::new(BLOCKSTRING_REGEX).unwrap().captures(&input) {
             Some(matches) => {
                 let period = matches.get(1).map(|m| m.as_str().to_string());
@@ -20,7 +20,7 @@ impl Block {
 
                 if let Some(desc) = desc {
                     return Ok(Block {
-                        period: period.unwrap_or("".to_string()),
+                        period_str: period.unwrap_or("".to_string()),
                         origin: origin.unwrap_or(default_origin.to_string()),
                         desc,
                     });
@@ -34,9 +34,9 @@ impl Block {
 
     pub fn to_block_string(self: &Block, include_origin: bool) -> String {
         if include_origin {
-            format!("- {} ({}) {}", self.period, self.origin, self.desc)
+            format!("- {} ({}) {}", self.period_str, self.origin, self.desc)
         } else {
-            format!("- {} {}", self.period, self.desc)
+            format!("- {} {}", self.period_str, self.desc)
         }
     }
 }
@@ -47,7 +47,7 @@ mod tests {
 
     #[test]
     fn test_parse_good_string_with_origin_tag() {
-        let b = Block::parse(
+        let b = Block::parse_block_string(
             "Personal",
             "08:00 - 09:00 (Personal) Morning Correspondence",
         )
@@ -56,7 +56,7 @@ mod tests {
         assert_eq!(
             b,
             Block {
-                period: "08:00 - 09:00".to_string(),
+                period_str: "08:00 - 09:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence".to_string(),
             }
@@ -65,12 +65,13 @@ mod tests {
 
     #[test]
     fn test_parse_good_string_without_origin_tag() {
-        let b = Block::parse("Personal", "07:30 - 08:00 Morning Correspondence").expect("");
+        let b = Block::parse_block_string("Personal", "07:30 - 08:00 Morning Correspondence")
+            .expect("");
 
         assert_eq!(
             b,
             Block {
-                period: "07:30 - 08:00".to_string(),
+                period_str: "07:30 - 08:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence".to_string(),
             }
@@ -79,7 +80,7 @@ mod tests {
 
     #[test]
     fn test_parse_good_string_without_origin_tag_but_brackets() {
-        let b = Block::parse(
+        let b = Block::parse_block_string(
             "Personal",
             "07:30 - 08:00 Morning Correspondence: talk to [[Lars]] later",
         )
@@ -88,7 +89,7 @@ mod tests {
         assert_eq!(
             b,
             Block {
-                period: "07:30 - 08:00".to_string(),
+                period_str: "07:30 - 08:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence: talk to [[Lars]] later".to_string(),
             }
@@ -97,12 +98,12 @@ mod tests {
 
     #[test]
     fn test_parse_good_string_that_starts_with_digit() {
-        let b = Block::parse("Personal", "07:30 - 08:00 1on1 with Hans").expect("");
+        let b = Block::parse_block_string("Personal", "07:30 - 08:00 1on1 with Hans").expect("");
 
         assert_eq!(
             b,
             Block {
-                period: "07:30 - 08:00".to_string(),
+                period_str: "07:30 - 08:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "1on1 with Hans".to_string(),
             }
@@ -111,12 +112,12 @@ mod tests {
 
     #[test]
     fn test_block_without_period_or_origin() {
-        let b = Block::parse("Personal", "Just some text").expect("");
+        let b = Block::parse_block_string("Personal", "Just some text").expect("");
 
         assert_eq!(
             b,
             Block {
-                period: "".to_string(),
+                period_str: "".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Just some text".to_string(),
             }
@@ -125,12 +126,12 @@ mod tests {
 
     #[test]
     fn test_block_with_empty_description() {
-        let b = Block::parse("Personal", "10:00 - 11:00").expect("");
+        let b = Block::parse_block_string("Personal", "10:00 - 11:00").expect("");
 
         assert_eq!(
             b,
             Block {
-                period: "10:00 - 11:00".to_string(),
+                period_str: "10:00 - 11:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "".to_string(),
             }
@@ -139,12 +140,12 @@ mod tests {
 
     #[test]
     fn test_period_has_only_start_time() {
-        let b = Block::parse("Personal", "10:00 Do something").expect("");
+        let b = Block::parse_block_string("Personal", "10:00 Do something").expect("");
 
         assert_eq!(
             b,
             Block {
-                period: "10:00".to_string(),
+                period_str: "10:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Do something".to_string(),
             }
@@ -152,9 +153,39 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_block_string_with_period_in_desc() {
+        let b =
+            Block::parse_block_string("Personal", "A desc with random period from 10:00 - 11:00")
+                .expect("");
+
+        assert_eq!(
+            b,
+            Block {
+                period_str: "".to_string(),
+                origin: "Personal".to_string(),
+                desc: "A desc with random period from 10:00 - 11:00".to_string(),
+            }
+        );
+    }
+
+    #[test]
+    fn test_parse_duplicate_period() {
+        let b = Block::parse_block_string("Personal", "10:00 - 11:00 10:00 - 11:00").expect("");
+
+        assert_eq!(
+            b,
+            Block {
+                period_str: "10:00 - 11:00".to_string(),
+                origin: "Personal".to_string(),
+                desc: "10:00 - 11:00".to_string(),
+            }
+        );
+    }
+
+    #[test]
     fn test_write_block_string() {
         let b = Block {
-            period: "10:00 - 11:00".to_string(),
+            period_str: "10:00 - 11:00".to_string(),
             origin: "Personal".to_string(),
             desc: "Buy Coffee".to_string(),
         };
