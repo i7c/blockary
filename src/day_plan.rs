@@ -23,7 +23,7 @@ impl DayPlan {
             .to_string()
     }
 
-    pub fn from_markdown(
+    pub fn from_daily_file_md(
         markdown_content: &str,
         origin: &str,
         abs_path: &str,
@@ -102,7 +102,7 @@ bla foo
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
-        let plan = DayPlan::from_markdown(&markdown, "Personal", "/base/path/a.md", "/base/path");
+        let plan = DayPlan::from_daily_file_md(&markdown, "Personal", "/base/path/a.md", "/base/path");
 
         assert_eq!(
             plan.blocks,
@@ -144,7 +144,7 @@ bla foo
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
-        let mut plan = DayPlan::from_markdown(&markdown, "Personal", "/a/b", "/a");
+        let mut plan = DayPlan::from_daily_file_md(&markdown, "Personal", "/a/b", "/a");
         plan.blocks.push(Block {
             period_str: "12:00".to_string(),
             origin: "Work".to_string(),
@@ -171,7 +171,7 @@ bla foo
 
     #[test]
     fn test_day_plan_file_path() {
-        let day_plan = DayPlan::from_markdown(
+        let day_plan = DayPlan::from_daily_file_md(
             "",
             "Work",
             "/home/foo/notes/2025/2025-11-12.md",
@@ -184,7 +184,7 @@ bla foo
     #[test]
     #[should_panic]
     fn test_day_plan_file_path_with_wrong_base_dir() {
-        let day_plan = DayPlan::from_markdown(
+        let day_plan = DayPlan::from_daily_file_md(
             "",
             "Work",
             "/home/foo/notes/2025/2025-11-12.md",
