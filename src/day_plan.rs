@@ -72,16 +72,6 @@ impl DayPlan {
             ..self
         }
     }
-
-    pub fn merge(self: DayPlan, other: DayPlan) -> DayPlan {
-        let mut blocks = self.blocks;
-        blocks.extend(other.blocks);
-        blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
-        DayPlan {
-            blocks: blocks,
-            ..self
-        }
-    }
 }
 
 pub fn original_blocks_from_all(plans: &Vec<DayPlan>) -> Vec<Block> {
@@ -136,74 +126,6 @@ bla foo
                     desc: "So should this".to_string()
                 },
             ],
-        );
-    }
-
-    #[test]
-    fn test_merge_two_plans() {
-        let plan1 = DayPlan {
-            origin: "Personal".to_string(),
-            abs_path: "/a/b".to_string(),
-            base_dir: "/a".to_string(),
-            blocks: vec![
-                Block {
-                    period_str: "08:00 - 11:00".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Morning Coffee".to_string(),
-                },
-                Block {
-                    period_str: "14:00 - 14:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Walk".to_string(),
-                },
-            ],
-        };
-
-        let plan2 = DayPlan {
-            origin: "Work".to_string(),
-            abs_path: "/b/b".to_string(),
-            base_dir: "/b".to_string(),
-            blocks: vec![
-                Block {
-                    period_str: "09:00 - 09:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Morning Brief".to_string(),
-                },
-                Block {
-                    period_str: "12:00 - 12:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Lunch".to_string(),
-                },
-            ],
-        };
-
-        let merged = plan1.merge(plan2);
-
-        assert_eq!(merged.origin, "Personal");
-        assert_eq!(
-            merged.blocks,
-            vec![
-                Block {
-                    period_str: "08:00 - 11:00".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Morning Coffee".to_string(),
-                },
-                Block {
-                    period_str: "09:00 - 09:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Morning Brief".to_string(),
-                },
-                Block {
-                    period_str: "12:00 - 12:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Lunch".to_string(),
-                },
-                Block {
-                    period_str: "14:00 - 14:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Walk".to_string(),
-                },
-            ]
         );
     }
 
