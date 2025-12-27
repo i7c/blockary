@@ -19,12 +19,13 @@ fn find_files(root: &str) -> Vec<PathBuf> {
 pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
     let markdown_files = find_files(root);
 
+    println!("Loading {} files from {}", markdown_files.len(), origin);
+
     let mut dps: Vec<DayPlan> = Vec::new();
     for md_file_path in markdown_files {
         let md_file_path = md_file_path.to_str().unwrap();
         match fs::read_to_string(md_file_path) {
             Ok(c) => {
-                println!("Read: {}", md_file_path);
                 dps.push(DayPlan::from_daily_file_md(&c, origin, md_file_path, root));
             }
             Err(_) => {
@@ -52,5 +53,6 @@ pub fn day_plans_by_note_id(all_day_plans: Vec<DayPlan>) -> HashMap<String, Vec<
             .or_insert(Vec::new())
             .push(dp);
     }
+    println!("-> {} sync groups", day_plans_by_note_id.len());
     day_plans_by_note_id
 }
