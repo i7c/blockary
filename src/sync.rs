@@ -25,7 +25,7 @@ pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
         match fs::read_to_string(md_file_path) {
             Ok(c) => {
                 println!("Read: {}", md_file_path);
-                dps.push(DayPlan::from_markdown(&c, origin, md_file_path, root));
+                dps.push(DayPlan::from_daily_file_md(&c, origin, md_file_path, root));
             }
             Err(_) => {
                 println!("Could not read file and will ignore: {}", md_file_path);

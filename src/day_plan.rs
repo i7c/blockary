@@ -1,5 +1,6 @@
 use crate::block::Block;
 use crate::markdown_access;
+use std::fs;
 use std::path::Path;
 
 #[derive(Debug, Clone)]
@@ -44,14 +45,26 @@ impl DayPlan {
         }
     }
 
-    pub fn update_markdown(self: &DayPlan, markdown_content: &str) -> String {
-        let block_strings: Vec<String> = self
-            .blocks
-            .iter()
-            .map(|b| b.to_block_string(b.origin != self.origin))
-            .collect();
+    pub fn write_to_daily_file(&self) {
+        let reload_md_content = fs::read_to_string(&self.abs_path);
+        match reload_md_content {
+            Ok(c) => {
+                let section_lines = &self
+                    .blocks
+                    .iter()
+                    .map(|b| b.to_block_string(b.origin != self.origin))
+                    .collect();
+                let md_with_updated_section =
+                    markdown_access::update_section_lines(section_lines, "Time Blocks", &c);
 
-        markdown_access::update_section_lines(&block_strings, "Time Blocks", markdown_content)
+                fs::write(&self.abs_path, md_with_updated_section).expect(
+                    "Could not write file. For safety, will cancel all further operations.",
+                );
+            }
+            Err(_) => {
+                println!("Skipping: Could not update file {}", self.abs_path);
+            }
+        }
     }
 
     pub fn only_original_blocks(self: &DayPlan) -> Vec<Block> {
@@ -60,10 +73,6 @@ impl DayPlan {
             .cloned()
             .filter(|b| b.origin == self.origin)
             .collect()
-    }
-
-    pub fn sort_blocks(self: &mut DayPlan) {
-        self.blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
     }
 
     pub fn with_updated_blocks(self: DayPlan, blocks: &Vec<Block>) -> DayPlan {
@@ -102,7 +111,8 @@ bla foo
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
-        let plan = DayPlan::from_daily_file_md(&markdown, "Personal", "/base/path/a.md", "/base/path");
+        let plan =
+            DayPlan::from_daily_file_md(&markdown, "Personal", "/base/path/a.md", "/base/path");
 
         assert_eq!(
             plan.blocks,
@@ -128,44 +138,6 @@ bla foo
                     desc: "So should this".to_string()
                 },
             ],
-        );
-    }
-
-    #[test]
-    fn test_update_block_strings_in_markdown() {
-        let markdown = "
-# Some Title
-## Some other section
-bla foo
-## Time Blocks
-- 08:00 - 11:00 This
-- 11:00 - 11:30 should
-- 14:00 - 15:00 appear
-# Notes
-- 10:00 - 11:00 This should not appear in the result
-";
-        let mut plan = DayPlan::from_daily_file_md(&markdown, "Personal", "/a/b", "/a");
-        plan.blocks.push(Block {
-            period_str: "12:00".to_string(),
-            origin: "Work".to_string(),
-            desc: "Lunch".to_string(),
-        });
-        plan.sort_blocks();
-
-        assert_eq!(
-            plan.update_markdown(markdown),
-            "
-# Some Title
-## Some other section
-bla foo
-## Time Blocks
-- 08:00 - 11:00 This
-- 11:00 - 11:30 should
-- 12:00 (Work) Lunch
-- 14:00 - 15:00 appear
-# Notes
-- 10:00 - 11:00 This should not appear in the result
-"
         );
     }
 
