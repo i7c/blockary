@@ -66,10 +66,6 @@ impl DayPlan {
         self.blocks.sort_by(|a, b| a.period.cmp(&b.period));
     }
 
-    pub fn set_origin(self: &mut DayPlan, origin: &str) {
-        self.origin = origin.to_string();
-    }
-
     pub fn with_updated_blocks(self: DayPlan, blocks: &Vec<Block>) -> DayPlan {
         DayPlan {
             origin: self.origin,
