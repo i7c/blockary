@@ -67,8 +67,10 @@ impl DayPlan {
     }
 
     pub fn with_updated_blocks(self: DayPlan, blocks: &Vec<Block>) -> DayPlan {
+        let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
+        updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
         DayPlan {
-            blocks: blocks.iter().cloned().collect(),
+            blocks: updated_blocks,
             ..self
         }
     }
