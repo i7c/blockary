@@ -53,6 +53,14 @@ pub fn day_plans_by_note_id(all_day_plans: Vec<DayPlan>) -> HashMap<String, Vec<
             .or_insert(Vec::new())
             .push(dp);
     }
-    println!("-> {} sync groups", day_plans_by_note_id.len());
+    let mut sync_groups_with_multiple = 0;
+    for (_, plans) in &day_plans_by_note_id {
+        if plans.len() > 1 {
+            sync_groups_with_multiple += 1;
+        }
+    }
+
+    println!("-> {} synchronization groups", day_plans_by_note_id.len());
+    println!("-> {} matches", sync_groups_with_multiple);
     day_plans_by_note_id
 }
