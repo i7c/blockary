@@ -32,12 +32,14 @@ pub fn update_section_lines(
         if line_is_heading(l, section_title) {
             under_heading = true;
             output_lines.push(l.to_string());
+            output_lines.push("".to_string());
             output_lines.extend(
                 section_lines
                     .iter()
                     .map(|s| s.to_owned())
                     .collect::<Vec<String>>(),
             );
+            output_lines.push("".to_string());
             continue;
         }
 
