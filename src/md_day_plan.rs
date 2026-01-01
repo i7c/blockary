@@ -13,18 +13,6 @@ pub struct MarkdownDayPlan {
 }
 
 impl DayPlan for MarkdownDayPlan {
-    fn note_id(self: &MarkdownDayPlan) -> String {
-        let base_dir = Path::new(&self.base_dir);
-        let abs_path = Path::new(&self.abs_path);
-
-        abs_path
-            .strip_prefix(base_dir)
-            .expect("Base path does not match the absolute path")
-            .to_str()
-            .unwrap()
-            .to_string()
-    }
-
     fn only_original_blocks(self: &MarkdownDayPlan) -> Vec<Block> {
         self.blocks
             .iter()
@@ -44,6 +32,18 @@ impl DayPlan for MarkdownDayPlan {
 }
 
 impl MarkdownDayPlan {
+    pub fn note_id(self: &MarkdownDayPlan) -> String {
+        let base_dir = Path::new(&self.base_dir);
+        let abs_path = Path::new(&self.abs_path);
+
+        abs_path
+            .strip_prefix(base_dir)
+            .expect("Base path does not match the absolute path")
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+
     pub fn from_daily_file_md(
         markdown_content: &str,
         origin: &str,

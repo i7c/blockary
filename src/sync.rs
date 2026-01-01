@@ -1,5 +1,4 @@
 use crate::blockary_cfg::Config;
-use crate::day_plan::DayPlan;
 use crate::md_day_plan::MarkdownDayPlan;
 use std::collections::HashMap;
 use std::fs;
