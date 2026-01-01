@@ -4,15 +4,15 @@ use std::fs;
 use std::path::Path;
 
 #[derive(Debug, Clone)]
-pub struct DayPlan {
+pub struct MarkdownDayPlan {
     pub origin: String,
     pub blocks: Vec<Block>,
     pub abs_path: String,
     base_dir: String,
 }
 
-impl DayPlan {
-    pub fn note_id(self: &DayPlan) -> String {
+impl MarkdownDayPlan {
+    pub fn note_id(self: &MarkdownDayPlan) -> String {
         let base_dir = Path::new(&self.base_dir);
         let abs_path = Path::new(&self.abs_path);
 
@@ -29,7 +29,7 @@ impl DayPlan {
         origin: &str,
         abs_path: &str,
         base_dir: &str,
-    ) -> DayPlan {
+    ) -> MarkdownDayPlan {
         let block_strings =
             markdown_access::read_items_under_section(markdown_content, "Time Blocks");
         let blocks = block_strings
@@ -37,7 +37,7 @@ impl DayPlan {
             .map(|bs| Block::parse_block_string(origin, bs).expect(""))
             .collect();
 
-        DayPlan {
+        MarkdownDayPlan {
             origin: origin.to_string(),
             blocks: blocks,
             abs_path: abs_path.to_string(),
@@ -67,7 +67,7 @@ impl DayPlan {
         }
     }
 
-    pub fn only_original_blocks(self: &DayPlan) -> Vec<Block> {
+    pub fn only_original_blocks(self: &MarkdownDayPlan) -> Vec<Block> {
         self.blocks
             .iter()
             .cloned()
@@ -75,17 +75,17 @@ impl DayPlan {
             .collect()
     }
 
-    pub fn with_updated_blocks(self: DayPlan, blocks: &Vec<Block>) -> DayPlan {
+    pub fn with_updated_blocks(self: MarkdownDayPlan, blocks: &Vec<Block>) -> MarkdownDayPlan {
         let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
         updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
-        DayPlan {
+        MarkdownDayPlan {
             blocks: updated_blocks,
             ..self
         }
     }
 }
 
-pub fn original_blocks_from_all(plans: &Vec<DayPlan>) -> Vec<Block> {
+pub fn original_blocks_from_all(plans: &Vec<MarkdownDayPlan>) -> Vec<Block> {
     let mut result = Vec::new();
     for plan in plans {
         result.extend(plan.only_original_blocks());
@@ -112,7 +112,7 @@ bla foo
 - 10:00 - 11:00 This should not appear in the result
 ";
         let plan =
-            DayPlan::from_daily_file_md(&markdown, "Personal", "/base/path/a.md", "/base/path");
+            MarkdownDayPlan::from_daily_file_md(&markdown, "Personal", "/base/path/a.md", "/base/path");
 
         assert_eq!(
             plan.blocks,
@@ -143,7 +143,7 @@ bla foo
 
     #[test]
     fn test_day_plan_file_path() {
-        let day_plan = DayPlan::from_daily_file_md(
+        let day_plan = MarkdownDayPlan::from_daily_file_md(
             "",
             "Work",
             "/home/foo/notes/2025/2025-11-12.md",
@@ -156,7 +156,7 @@ bla foo
     #[test]
     #[should_panic]
     fn test_day_plan_file_path_with_wrong_base_dir() {
-        let day_plan = DayPlan::from_daily_file_md(
+        let day_plan = MarkdownDayPlan::from_daily_file_md(
             "",
             "Work",
             "/home/foo/notes/2025/2025-11-12.md",
@@ -168,7 +168,7 @@ bla foo
 
     #[test]
     fn test_get_original_blocks_only() {
-        let day_plan = DayPlan {
+        let day_plan = MarkdownDayPlan {
             origin: "Work".to_string(),
             abs_path: "/work/20.md".to_string(),
             base_dir: "/work".to_string(),
@@ -194,7 +194,7 @@ bla foo
 
     #[test]
     fn test_get_original_blocks_from_all() {
-        let dp1 = DayPlan {
+        let dp1 = MarkdownDayPlan {
             origin: "Work".to_string(),
             abs_path: "/work/20.md".to_string(),
             base_dir: "/work".to_string(),
@@ -212,7 +212,7 @@ bla foo
             ],
         };
 
-        let dp2 = DayPlan {
+        let dp2 = MarkdownDayPlan {
             origin: "Personal".to_string(),
             abs_path: "/work/20.md".to_string(),
             base_dir: "/work".to_string(),
@@ -241,7 +241,7 @@ bla foo
 
     #[test]
     fn test_update_blocks() {
-        let dp1 = DayPlan {
+        let dp1 = MarkdownDayPlan {
             origin: "Work".to_string(),
             abs_path: "/work/20.md".to_string(),
             base_dir: "/work".to_string(),

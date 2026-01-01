@@ -1,5 +1,5 @@
 use crate::blockary_cfg::Config;
-use crate::md_day_plan::DayPlan;
+use crate::md_day_plan::MarkdownDayPlan;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -16,17 +16,17 @@ fn find_files(root: &str) -> Vec<PathBuf> {
         .collect()
 }
 
-pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
+pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<MarkdownDayPlan> {
     let markdown_files = find_files(root);
 
     println!("Loading {} files from {}", markdown_files.len(), origin);
 
-    let mut dps: Vec<DayPlan> = Vec::new();
+    let mut dps: Vec<MarkdownDayPlan> = Vec::new();
     for md_file_path in markdown_files {
         let md_file_path = md_file_path.to_str().unwrap();
         match fs::read_to_string(md_file_path) {
             Ok(c) => {
-                dps.push(DayPlan::from_daily_file_md(&c, origin, md_file_path, root));
+                dps.push(MarkdownDayPlan::from_daily_file_md(&c, origin, md_file_path, root));
             }
             Err(_) => {
                 println!("Could not read file and will ignore: {}", md_file_path);
@@ -36,7 +36,7 @@ pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
     dps
 }
 
-pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
+pub fn all_day_plans_from_config(config: Config) -> Vec<MarkdownDayPlan> {
     config
         .origins
         .iter()
@@ -45,8 +45,8 @@ pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
         .collect()
 }
 
-pub fn day_plans_by_note_id(all_day_plans: Vec<DayPlan>) -> HashMap<String, Vec<DayPlan>> {
-    let mut day_plans_by_note_id: HashMap<String, Vec<DayPlan>> = HashMap::new();
+pub fn day_plans_by_note_id(all_day_plans: Vec<MarkdownDayPlan>) -> HashMap<String, Vec<MarkdownDayPlan>> {
+    let mut day_plans_by_note_id: HashMap<String, Vec<MarkdownDayPlan>> = HashMap::new();
     for dp in all_day_plans {
         day_plans_by_note_id
             .entry(dp.note_id())
