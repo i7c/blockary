@@ -198,8 +198,10 @@ like $(exit 0)
 bla foo
    ### Some wrong indent
 ## Time Blocks
+
 - 10:00 - 11:00 (Personal) -hidden-
 - 11:00 - 12:00 Meeting
+
 # Notes
 - 10:00 - 11:00 What is this?
 "
