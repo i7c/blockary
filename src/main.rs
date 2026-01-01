@@ -3,7 +3,7 @@ use std::fs;
 
 mod block;
 mod blockary_cfg;
-mod day_plan;
+mod md_day_plan;
 mod markdown_access;
 mod sync;
 
@@ -21,7 +21,7 @@ fn main() {
     let day_plans_by_note_id = sync::day_plans_by_note_id(all_day_plans);
 
     for (_id, plans) in day_plans_by_note_id {
-        let synced_blocks = day_plan::original_blocks_from_all(&plans);
+        let synced_blocks = md_day_plan::original_blocks_from_all(&plans);
         for plan in plans {
             plan.with_updated_blocks(&synced_blocks)
                 .write_to_daily_file();
