@@ -1,4 +1,5 @@
 use crate::block::Block;
+use crate::day_plan::DayPlan;
 use crate::markdown_access;
 use std::fs;
 use std::path::Path;
@@ -11,8 +12,8 @@ pub struct MarkdownDayPlan {
     base_dir: String,
 }
 
-impl MarkdownDayPlan {
-    pub fn note_id(self: &MarkdownDayPlan) -> String {
+impl DayPlan for MarkdownDayPlan {
+    fn note_id(self: &MarkdownDayPlan) -> String {
         let base_dir = Path::new(&self.base_dir);
         let abs_path = Path::new(&self.abs_path);
 
@@ -24,6 +25,25 @@ impl MarkdownDayPlan {
             .to_string()
     }
 
+    fn only_original_blocks(self: &MarkdownDayPlan) -> Vec<Block> {
+        self.blocks
+            .iter()
+            .cloned()
+            .filter(|b| b.origin == self.origin)
+            .collect()
+    }
+
+    fn with_updated_blocks(self: MarkdownDayPlan, blocks: &Vec<Block>) -> MarkdownDayPlan {
+        let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
+        updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
+        MarkdownDayPlan {
+            blocks: updated_blocks,
+            ..self
+        }
+    }
+}
+
+impl MarkdownDayPlan {
     pub fn from_daily_file_md(
         markdown_content: &str,
         origin: &str,
@@ -66,23 +86,6 @@ impl MarkdownDayPlan {
             }
         }
     }
-
-    pub fn only_original_blocks(self: &MarkdownDayPlan) -> Vec<Block> {
-        self.blocks
-            .iter()
-            .cloned()
-            .filter(|b| b.origin == self.origin)
-            .collect()
-    }
-
-    pub fn with_updated_blocks(self: MarkdownDayPlan, blocks: &Vec<Block>) -> MarkdownDayPlan {
-        let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
-        updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
-        MarkdownDayPlan {
-            blocks: updated_blocks,
-            ..self
-        }
-    }
 }
 
 pub fn original_blocks_from_all(plans: &Vec<MarkdownDayPlan>) -> Vec<Block> {
@@ -111,8 +114,12 @@ bla foo
 # Notes
 - 10:00 - 11:00 This should not appear in the result
 ";
-        let plan =
-            MarkdownDayPlan::from_daily_file_md(&markdown, "Personal", "/base/path/a.md", "/base/path");
+        let plan = MarkdownDayPlan::from_daily_file_md(
+            &markdown,
+            "Personal",
+            "/base/path/a.md",
+            "/base/path",
+        );
 
         assert_eq!(
             plan.blocks,

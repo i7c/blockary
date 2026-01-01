@@ -1,10 +1,12 @@
+use day_plan::DayPlan;
 use std::env;
 use std::fs;
 
 mod block;
 mod blockary_cfg;
-mod md_day_plan;
+mod day_plan;
 mod markdown_access;
+mod md_day_plan;
 mod sync;
 
 fn main() {
