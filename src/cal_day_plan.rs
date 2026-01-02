@@ -1,5 +1,5 @@
 use crate::block::Block;
-use chrono::{FixedOffset, NaiveDateTime, Timelike};
+use chrono::{FixedOffset, NaiveDate, NaiveDateTime, Timelike};
 use icalendar::{Calendar, CalendarDateTime, Component, DatePerhapsTime, Event};
 use std::str::FromStr;
 
@@ -10,7 +10,7 @@ pub struct CalDayPlan {
 }
 
 impl CalDayPlan {
-    pub fn from_icalendar(ical: &str) -> Result<CalDayPlan, &'static str> {
+    pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<CalDayPlan, &'static str> {
         let calendar = match ical.parse::<Calendar>() {
             Ok(result) => result,
             Err(_) => return Err("Failed to parse ical"),
@@ -20,6 +20,25 @@ impl CalDayPlan {
 
         for component in calendar.components {
             if let Some(event) = component.as_event() {
+                let Some(start) = event.get_start() else {
+                    continue;
+                };
+                let Some(start) = date_perhaps_time_to_naive(start) else {
+                    continue;
+                };
+                let Some(end) = event.get_end() else { continue };
+                let Some(end) = date_perhaps_time_to_naive(end) else {
+                    continue;
+                };
+
+                if start.date() != end.date() {
+                    continue;
+                }
+
+                if start.date() != for_day {
+                    continue;
+                }
+
                 if let Some(period) = extract_period(event) {
                     blocks.push(Block {
                         period_str: period,
@@ -42,7 +61,7 @@ fn date_perhaps_time_to_naive(dpt: DatePerhapsTime) -> Option<NaiveDateTime> {
         let naive = match cdt {
             CalendarDateTime::Floating(naive) => naive,
             CalendarDateTime::Utc(date_time) => date_time
-                .with_timezone(&FixedOffset::west_opt(3 * 3600).unwrap())
+                .with_timezone(&FixedOffset::from_str("-03:00").unwrap())
                 .naive_local(),
             CalendarDateTime::WithTimezone { date_time, tzid } => {
                 let timezone = FixedOffset::from_str(&tzid).unwrap();
@@ -92,6 +111,16 @@ METHOD:PUBLISH
 X-WR-CALNAME:Privat
 X-WR-TIMEZONE:America/Sao_Paulo
 BEGIN:VEVENT
+DTSTART:20251230T160000Z
+DTEND:20251230T200000Z
+DTSTAMP:20260101T181800Z
+UID:e9im6r31d5miqs35e9pmurj1dgmn6ubecct30eb7ehhm8sjdecpmgrracssnaqrcd1ij8s3
+ kd1i74ehh@google.com
+ATTENDEE;X-NUM-GUESTS=0:mailto:constantin.weisser@gmail.com
+RECURRENCE-ID:20251230T160000Z
+SUMMARY:Busy
+END:VEVENT
+BEGIN:VEVENT
 DTSTART:20260101T120000Z
 DTEND:20260101T160000Z
 DTSTAMP:20260101T181800Z
@@ -104,7 +133,10 @@ END:VEVENT
 END:VCALENDAR
 ";
 
-        let day_plan = CalDayPlan::from_icalendar(ical_str).unwrap();
+        let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 1).unwrap();
+
+        let day_plan = CalDayPlan::from_icalendar(ical_str, for_day).unwrap();
+        assert_eq!(day_plan.blocks.len(), 1);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "09:00 - 13:00");
         assert_eq!(day_plan.blocks.get(0).unwrap().desc, "Busy");
