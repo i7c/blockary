@@ -1,4 +1,4 @@
-use crate::block::Block;
+use crate::{block::Block, day_plan::DayPlan};
 use chrono::{FixedOffset, NaiveDate, NaiveDateTime, Timelike};
 use icalendar::{Calendar, CalendarDateTime, Component, DatePerhapsTime, Event};
 use std::str::FromStr;
@@ -11,6 +11,8 @@ pub struct CalDayPlan {
 
 impl CalDayPlan {
     pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<CalDayPlan, &'static str> {
+        let origin = "Calendar";
+
         let calendar = match ical.parse::<Calendar>() {
             Ok(result) => result,
             Err(_) => return Err("Failed to parse ical"),
@@ -42,17 +44,36 @@ impl CalDayPlan {
                 if let Some(period) = extract_period(event) {
                     blocks.push(Block {
                         period_str: period,
-                        origin: "Calendar".to_string(),
-                        desc: "Busy".to_string(),
+                        origin: origin.to_string(),
+                        desc: event.get_description().unwrap_or_else(|| "Busy").to_string(),
                     });
                 }
             }
         }
 
         Ok(CalDayPlan {
-            origin: "Calendar".to_string(),
+            origin: origin.to_string(),
             blocks: blocks,
         })
+    }
+}
+
+impl DayPlan for CalDayPlan {
+    fn only_original_blocks(&self) -> Vec<Block> {
+        self.blocks
+            .iter()
+            .cloned()
+            .filter(|b| b.origin == self.origin)
+            .collect()
+    }
+
+    fn with_updated_blocks(self, blocks: &Vec<Block>) -> Self {
+        let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
+        updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
+        CalDayPlan {
+            blocks: updated_blocks,
+            ..self
+        }
     }
 }
 
