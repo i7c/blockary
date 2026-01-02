@@ -1,8 +1,12 @@
+use chrono::NaiveDate;
+use regex::Regex;
+
 use crate::block::Block;
 use crate::day_plan::DayPlan;
 use crate::markdown_access;
 use std::fs;
 use std::path::Path;
+use std::str::FromStr;
 
 #[derive(Debug, Clone)]
 pub struct MarkdownDayPlan {
@@ -27,6 +31,28 @@ impl DayPlan for MarkdownDayPlan {
         MarkdownDayPlan {
             blocks: updated_blocks,
             ..self
+        }
+    }
+
+    fn day(&self) -> Option<NaiveDate> {
+        let relative_path = self
+            .abs_path
+            .strip_prefix(&self.base_dir)
+            .expect("Base path does not match the absolute path")
+            .to_string();
+
+        match Regex::new(r"\d\d\d\d-\d\d-\d\d")
+            .unwrap()
+            .captures(&relative_path)
+        {
+            Some(matches) => {
+                let date_str: String = matches.get(0).map(|m| m.as_str().to_string())?;
+                match NaiveDate::from_str(&date_str) {
+                    Ok(d) => Some(d),
+                    Err(_) => None,
+                }
+            }
+            None => None,
         }
     }
 }
@@ -98,6 +124,8 @@ pub fn original_blocks_from_all(plans: &Vec<MarkdownDayPlan>) -> Vec<Block> {
 
 #[cfg(test)]
 mod tests {
+    use chrono::NaiveDate;
+
     use super::*;
 
     #[test]
@@ -278,5 +306,32 @@ bla foo
         assert_eq!(updated.blocks.len(), 1);
         assert_eq!(updated.blocks.get(0).unwrap().origin, "Personal");
         assert_eq!(updated.blocks.get(0).unwrap().desc, "Sleep");
+    }
+
+    #[test]
+    fn test_extract_naive_date_for_daily_note() {
+        let dp = MarkdownDayPlan {
+            origin: "Foo".to_string(),
+            blocks: vec![],
+            abs_path: "/foo/bar/baz/2025/10/2025-10-12.md".to_string(),
+            base_dir: "/foo/bar/baz".to_string(),
+        };
+
+        assert_eq!(
+            dp.day().unwrap(),
+            NaiveDate::from_ymd_opt(2025, 10, 12).unwrap()
+        );
+    }
+
+    #[test]
+    fn test_extract_none_for_non_daily_note() {
+        let dp = MarkdownDayPlan {
+            origin: "Foo".to_string(),
+            blocks: vec![],
+            abs_path: "/foo/bar/baz/2025/10/Overview".to_string(),
+            base_dir: "/foo/bar/baz".to_string(),
+        };
+
+        assert_eq!(dp.day(), None);
     }
 }

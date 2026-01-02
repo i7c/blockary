@@ -7,6 +7,7 @@ use std::str::FromStr;
 pub struct CalDayPlan {
     pub origin: String,
     pub blocks: Vec<Block>,
+    day: NaiveDate,
 }
 
 impl CalDayPlan {
@@ -45,7 +46,10 @@ impl CalDayPlan {
                     blocks.push(Block {
                         period_str: period,
                         origin: origin.to_string(),
-                        desc: event.get_description().unwrap_or_else(|| "Busy").to_string(),
+                        desc: event
+                            .get_description()
+                            .unwrap_or_else(|| "Busy")
+                            .to_string(),
                     });
                 }
             }
@@ -54,6 +58,7 @@ impl CalDayPlan {
         Ok(CalDayPlan {
             origin: origin.to_string(),
             blocks: blocks,
+            day: for_day,
         })
     }
 }
@@ -74,6 +79,10 @@ impl DayPlan for CalDayPlan {
             blocks: updated_blocks,
             ..self
         }
+    }
+
+    fn day(&self) -> Option<NaiveDate> {
+        Some(self.day)
     }
 }
 
