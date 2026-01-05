@@ -99,6 +99,7 @@ impl MarkdownDayPlan {
                     .blocks
                     .iter()
                     .map(|b| b.to_block_string(b.origin != self.origin))
+                    .map(|bs| format!("- {}", bs))
                     .collect();
                 let md_with_updated_section =
                     markdown_access::update_section_lines(section_lines, "Time Blocks", &c);

@@ -34,9 +34,9 @@ impl Block {
 
     pub fn to_block_string(self: &Block, include_origin: bool) -> String {
         if include_origin {
-            format!("- {} ({}) {}", self.period_str, self.origin, self.desc)
+            format!("{} ({}) {}", self.period_str, self.origin, self.desc)
         } else {
-            format!("- {} {}", self.period_str, self.desc)
+            format!("{} {}", self.period_str, self.desc)
         }
     }
 }
@@ -192,8 +192,8 @@ mod tests {
 
         assert_eq!(
             b.to_block_string(true),
-            "- 10:00 - 11:00 (Personal) Buy Coffee"
+            "10:00 - 11:00 (Personal) Buy Coffee"
         );
-        assert_eq!(b.to_block_string(false), "- 10:00 - 11:00 Buy Coffee");
+        assert_eq!(b.to_block_string(false), "10:00 - 11:00 Buy Coffee");
     }
 }
