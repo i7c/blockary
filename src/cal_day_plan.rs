@@ -11,49 +11,37 @@ pub struct CalDayPlan {
 }
 
 impl CalDayPlan {
-    pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<CalDayPlan, &'static str> {
+    pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<CalDayPlan, String> {
         let origin = "Calendar";
 
-        let calendar = match ical.parse::<Calendar>() {
-            Ok(result) => result,
-            Err(_) => return Err("Failed to parse ical"),
-        };
+        let calendar = ical
+            .parse::<Calendar>()
+            .map_err(|e| format!("Failed to parse the calendar: {}", e))?;
 
-        let mut blocks = Vec::new();
+        let blocks = calendar
+            .components
+            .iter()
+            .filter_map(|comp| comp.as_event())
+            .filter_map(|event| {
+                let start = date_perhaps_time_to_naive(event.get_start()?)?;
+                let end = date_perhaps_time_to_naive(event.get_end()?)?;
 
-        for component in calendar.components {
-            if let Some(event) = component.as_event() {
-                let Some(start) = event.get_start() else {
-                    continue;
-                };
-                let Some(start) = date_perhaps_time_to_naive(start) else {
-                    continue;
-                };
-                let Some(end) = event.get_end() else { continue };
-                let Some(end) = date_perhaps_time_to_naive(end) else {
-                    continue;
-                };
+                if start.date() != end.date() || start.date() != for_day {
+                    None
+                } else {
+                    let period = extract_period(event)?;
 
-                if start.date() != end.date() {
-                    continue;
-                }
-
-                if start.date() != for_day {
-                    continue;
-                }
-
-                if let Some(period) = extract_period(event) {
-                    blocks.push(Block {
+                    Some(Block {
                         period_str: period,
                         origin: origin.to_string(),
                         desc: event
                             .get_description()
                             .unwrap_or_else(|| "Busy")
                             .to_string(),
-                    });
+                    })
                 }
-            }
-        }
+            })
+            .collect();
 
         Ok(CalDayPlan {
             origin: origin.to_string(),
