@@ -44,6 +44,15 @@ pub fn run() {
             let all_day_plans = sync::all_day_plans_from_config(config);
             let day_plans_by_note_id = sync::day_plans_by_note_id(all_day_plans);
 
+            let sync_count = day_plans_by_note_id
+                .iter()
+                .filter(|(_id, day_plans)| day_plans.len() > 1)
+                .count();
+            println!(
+                "{sync_count} of {} days will be synced",
+                day_plans_by_note_id.len()
+            );
+
             for (_id, plans) in day_plans_by_note_id {
                 let mut synced_blocks = md_day_plan::original_blocks_from_all(&plans);
 
