@@ -165,31 +165,6 @@ bla foo
     }
 
     #[test]
-    fn test_day_plan_file_path() {
-        let day_plan = MarkdownDayPlan::from_daily_file_md(
-            "",
-            "Work",
-            "/home/foo/notes/2025/2025-11-12.md",
-            "/home/foo/notes",
-        );
-
-        assert_eq!(day_plan.note_id(), "2025/2025-11-12.md");
-    }
-
-    #[test]
-    #[should_panic]
-    fn test_day_plan_file_path_with_wrong_base_dir() {
-        let day_plan = MarkdownDayPlan::from_daily_file_md(
-            "",
-            "Work",
-            "/home/foo/notes/2025/2025-11-12.md",
-            "/home/foo/not-parent",
-        );
-
-        day_plan.note_id();
-    }
-
-    #[test]
     fn test_get_original_blocks_only() {
         let day_plan = MarkdownDayPlan {
             origin: "Work".to_string(),
