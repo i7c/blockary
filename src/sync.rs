@@ -1,5 +1,7 @@
 use crate::blockary_cfg::Config;
+use crate::day_plan::DayPlan;
 use crate::md_day_plan::MarkdownDayPlan;
+use chrono::NaiveDate;
 use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
@@ -52,22 +54,15 @@ pub fn all_day_plans_from_config(config: Config) -> Vec<MarkdownDayPlan> {
 
 pub fn day_plans_by_note_id(
     all_day_plans: Vec<MarkdownDayPlan>,
-) -> HashMap<String, Vec<MarkdownDayPlan>> {
-    let mut day_plans_by_note_id: HashMap<String, Vec<MarkdownDayPlan>> = HashMap::new();
+) -> HashMap<NaiveDate, Vec<MarkdownDayPlan>> {
+    let mut day_plans_by_note_id: HashMap<NaiveDate, Vec<MarkdownDayPlan>> = HashMap::new();
     for dp in all_day_plans {
+        let Some(key) = dp.day() else { continue };
         day_plans_by_note_id
-            .entry(dp.note_id())
+            .entry(key)
             .or_insert(Vec::new())
             .push(dp);
     }
-    let mut sync_groups_with_multiple = 0;
-    for (_, plans) in &day_plans_by_note_id {
-        if plans.len() > 1 {
-            sync_groups_with_multiple += 1;
-        }
-    }
 
-    println!("-> {} synchronization groups", day_plans_by_note_id.len());
-    println!("-> {} matches", sync_groups_with_multiple);
     day_plans_by_note_id
 }
