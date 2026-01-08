@@ -5,7 +5,6 @@ use crate::block::Block;
 use crate::day_plan::DayPlan;
 use crate::markdown_access;
 use std::fs;
-use std::path::Path;
 use std::str::FromStr;
 
 #[derive(Debug, Clone)]
