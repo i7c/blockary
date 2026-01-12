@@ -42,7 +42,7 @@ pub fn run() {
             let today = Local::now().date_naive();
 
             let all_day_plans = sync::all_day_plans_from_config(config);
-            let day_plans_by_note_id = sync::day_plans_by_note_id(all_day_plans);
+            let day_plans_by_note_id = sync::day_plans_by_day(all_day_plans);
 
             let sync_count = day_plans_by_note_id
                 .iter()

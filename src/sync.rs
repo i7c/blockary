@@ -52,7 +52,7 @@ pub fn all_day_plans_from_config(config: Config) -> Vec<MarkdownDayPlan> {
         .collect()
 }
 
-pub fn day_plans_by_note_id(
+pub fn day_plans_by_day(
     all_day_plans: Vec<MarkdownDayPlan>,
 ) -> HashMap<NaiveDate, Vec<MarkdownDayPlan>> {
     let mut day_plans_by_note_id: HashMap<NaiveDate, Vec<MarkdownDayPlan>> = HashMap::new();
