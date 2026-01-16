@@ -50,27 +50,31 @@ impl DayPlan {
         }
 
         if let Source::ObsMarkDown { abs_path, base_dir } = &self.source {
-            let relative_path = abs_path
-                .strip_prefix(base_dir)
-                .expect("Base path does not match the absolute path")
-                .to_string();
-
-            match Regex::new(r"\d\d\d\d-\d\d-\d\d")
-                .unwrap()
-                .captures(&relative_path)
-            {
-                Some(matches) => {
-                    let date_str: String = matches.get(0).map(|m| m.as_str().to_string())?;
-                    match NaiveDate::from_str(&date_str) {
-                        Ok(d) => Some(d),
-                        Err(_) => None,
-                    }
-                }
-                None => None,
-            }
+            maybe_extract_day_from_path(abs_path, base_dir)
         } else {
             None
         }
+    }
+}
+
+fn maybe_extract_day_from_path(abs_path: &String, base_dir: &String) -> Option<NaiveDate> {
+    let relative_path = abs_path
+        .strip_prefix(base_dir)
+        .expect("Base path does not match the absolute path")
+        .to_string();
+
+    match Regex::new(r"\d\d\d\d-\d\d-\d\d")
+        .unwrap()
+        .captures(&relative_path)
+    {
+        Some(matches) => {
+            let date_str: String = matches.get(0).map(|m| m.as_str().to_string())?;
+            match NaiveDate::from_str(&date_str) {
+                Ok(d) => Some(d),
+                Err(_) => None,
+            }
+        }
+        None => None,
     }
 }
 
