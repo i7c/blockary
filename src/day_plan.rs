@@ -46,13 +46,13 @@ impl DayPlan {
     fn day(&self) -> Option<NaiveDate> {
         match self.day {
             Some(_) => return self.day.clone(),
-            _ => (),
-        }
-
-        if let Source::ObsMarkDown { abs_path, base_dir } = &self.source {
-            maybe_extract_day_from_path(abs_path, base_dir)
-        } else {
-            None
+            _ => {
+                if let Source::ObsMarkDown { abs_path, base_dir } = &self.source {
+                    maybe_extract_day_from_path(abs_path, base_dir)
+                } else {
+                    None
+                }
+            }
         }
     }
 }
