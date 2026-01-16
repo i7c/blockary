@@ -188,4 +188,19 @@ mod tests {
             Some(NaiveDate::from_ymd_opt(2020, 10, 20).unwrap())
         );
     }
+
+    #[test]
+    fn test_get_no_day_can_be_calculated() {
+        let day_plan = DayPlan {
+            origin: "Work".to_string(),
+            day: None,
+            source: Source::ObsMarkDown {
+                abs_path: "/work/20250103.md".to_string(),
+                base_dir: "/work".to_string(),
+            },
+            blocks: vec![],
+        };
+
+        assert_eq!(day_plan.day(), None);
+    }
 }
