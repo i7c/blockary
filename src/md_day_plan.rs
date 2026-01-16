@@ -2,7 +2,7 @@ use chrono::NaiveDate;
 use regex::Regex;
 
 use crate::block::Block;
-use crate::day_plan::DayPlan;
+use crate::day_plan::DayPlanTrait;
 use crate::markdown_access;
 use std::fs;
 use std::str::FromStr;
@@ -15,7 +15,7 @@ pub struct MarkdownDayPlan {
     base_dir: String,
 }
 
-impl DayPlan for MarkdownDayPlan {
+impl DayPlanTrait for MarkdownDayPlan {
     fn only_original_blocks(self: &MarkdownDayPlan) -> Vec<Block> {
         self.blocks
             .iter()

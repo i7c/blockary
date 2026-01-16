@@ -1,4 +1,4 @@
-use crate::{block::Block, day_plan::DayPlan};
+use crate::{block::Block, day_plan::DayPlanTrait};
 use chrono::{FixedOffset, NaiveDate, NaiveDateTime, Timelike};
 use icalendar::{Calendar, CalendarDateTime, Component, DatePerhapsTime, Event};
 use std::str::FromStr;
@@ -51,7 +51,7 @@ impl CalDayPlan {
     }
 }
 
-impl DayPlan for CalDayPlan {
+impl DayPlanTrait for CalDayPlan {
     fn only_original_blocks(&self) -> Vec<Block> {
         self.blocks
             .iter()

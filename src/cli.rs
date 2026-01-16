@@ -1,6 +1,6 @@
 use crate::blockary_cfg;
 use crate::cal_day_plan;
-use crate::day_plan::DayPlan;
+use crate::day_plan::DayPlanTrait;
 use crate::md_day_plan;
 use crate::sync;
 use chrono::Local;

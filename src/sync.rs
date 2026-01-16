@@ -1,5 +1,5 @@
 use crate::blockary_cfg::Config;
-use crate::day_plan::DayPlan;
+use crate::day_plan::DayPlanTrait;
 use crate::md_day_plan::MarkdownDayPlan;
 use chrono::NaiveDate;
 use std::collections::HashMap;
