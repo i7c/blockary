@@ -1,4 +1,7 @@
+use std::str::FromStr;
+
 use chrono::NaiveDate;
+use regex::Regex;
 
 use crate::block::Block;
 
@@ -37,6 +40,36 @@ impl DayPlan {
         DayPlan {
             blocks: updated_blocks,
             ..self
+        }
+    }
+
+    fn day(&self) -> Option<NaiveDate> {
+        match self.day {
+            Some(_) => return self.day.clone(),
+            _ => (),
+        }
+
+        if let Source::ObsMarkDown { abs_path, base_dir } = &self.source {
+            let relative_path = abs_path
+                .strip_prefix(base_dir)
+                .expect("Base path does not match the absolute path")
+                .to_string();
+
+            match Regex::new(r"\d\d\d\d-\d\d-\d\d")
+                .unwrap()
+                .captures(&relative_path)
+            {
+                Some(matches) => {
+                    let date_str: String = matches.get(0).map(|m| m.as_str().to_string())?;
+                    match NaiveDate::from_str(&date_str) {
+                        Ok(d) => Some(d),
+                        Err(_) => None,
+                    }
+                }
+                None => None,
+            }
+        } else {
+            None
         }
     }
 }
@@ -114,5 +147,23 @@ mod tests {
 
         assert_eq!(blocks.len(), 1);
         assert_eq!(blocks.get(0).unwrap().desc, "Emails");
+    }
+
+    #[test]
+    fn test_get_day_from_path() {
+        let day_plan = DayPlan {
+            origin: "Work".to_string(),
+            day: None,
+            source: Source::ObsMarkDown {
+                abs_path: "/work/2015-11-03.md".to_string(),
+                base_dir: "/work".to_string(),
+            },
+            blocks: vec![],
+        };
+
+        assert_eq!(
+            day_plan.day(),
+            Some(NaiveDate::from_ymd_opt(2015, 11, 03).unwrap())
+        );
     }
 }
