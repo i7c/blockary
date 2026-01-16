@@ -170,4 +170,22 @@ mod tests {
             Some(NaiveDate::from_ymd_opt(2015, 11, 03).unwrap())
         );
     }
+
+    #[test]
+    fn test_get_day_takes_precedence_from_day() {
+        let day_plan = DayPlan {
+            origin: "Work".to_string(),
+            day: Some(NaiveDate::from_ymd_opt(2020, 10, 20).unwrap()),
+            source: Source::ObsMarkDown {
+                abs_path: "/work/2015-11-03.md".to_string(),
+                base_dir: "/work".to_string(),
+            },
+            blocks: vec![],
+        };
+
+        assert_eq!(
+            day_plan.day(),
+            Some(NaiveDate::from_ymd_opt(2020, 10, 20).unwrap())
+        );
+    }
 }
