@@ -26,7 +26,7 @@ pub struct DayPlan {
 }
 
 impl DayPlan {
-    fn only_original_blocks(self) -> Vec<Block> {
+    fn only_original_blocks(&self) -> Vec<Block> {
         self.blocks
             .iter()
             .cloned()
@@ -76,6 +76,14 @@ fn maybe_extract_day_from_path(abs_path: &String, base_dir: &String) -> Option<N
         }
         None => None,
     }
+}
+
+pub fn original_blocks_from_all(plans: &Vec<DayPlan>) -> Vec<Block> {
+    let mut result = Vec::new();
+    for plan in plans {
+        result.extend(plan.only_original_blocks());
+    }
+    result
 }
 
 #[cfg(test)]
@@ -202,5 +210,58 @@ mod tests {
         };
 
         assert_eq!(day_plan.day(), None);
+    }
+
+    #[test]
+    fn test_get_original_blocks_from_all() {
+        let dp1 = DayPlan {
+            origin: "Work".to_string(),
+            day: None,
+            source: Source::ObsMarkDown {
+                abs_path: "/work/2015-11-03.md".to_string(),
+                base_dir: "/work".to_string(),
+            },
+            blocks: vec![
+                Block {
+                    period_str: "08:00 - 10:30".to_string(),
+                    origin: "Work".to_string(),
+                    desc: "Emails".to_string(),
+                },
+                Block {
+                    period_str: "14:00 - 14:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Walk".to_string(),
+                },
+            ],
+        };
+
+        let dp2 = DayPlan {
+            origin: "Personal".to_string(),
+            day: None,
+            source: Source::ObsMarkDown {
+                abs_path: "/work/2015-11-03.md".to_string(),
+                base_dir: "/work".to_string(),
+            },
+            blocks: vec![
+                Block {
+                    period_str: "09:00 - 10:00".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Make coffee".to_string(),
+                },
+                Block {
+                    period_str: "14:00 - 14:30".to_string(),
+                    origin: "Hobby".to_string(),
+                    desc: "Walk".to_string(),
+                },
+            ],
+        };
+
+        let blocks = original_blocks_from_all(&vec![dp1, dp2]);
+
+        assert_eq!(blocks.len(), 2);
+        assert_eq!(blocks.get(0).unwrap().origin, "Work");
+        assert_eq!(blocks.get(0).unwrap().desc, "Emails");
+        assert_eq!(blocks.get(1).unwrap().origin, "Personal");
+        assert_eq!(blocks.get(1).unwrap().desc, "Make coffee");
     }
 }
