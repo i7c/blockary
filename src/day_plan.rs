@@ -86,4 +86,33 @@ mod tests {
         assert_eq!(updated.blocks.get(0).unwrap().origin, "Personal");
         assert_eq!(updated.blocks.get(0).unwrap().desc, "Sleep");
     }
+
+    #[test]
+    fn test_get_original_blocks_only() {
+        let day_plan = DayPlan {
+            origin: "Work".to_string(),
+            day: None,
+            source: Source::ObsMarkDown {
+                abs_path: "/work/20.md".to_string(),
+                base_dir: "/work".to_string(),
+            },
+            blocks: vec![
+                Block {
+                    period_str: "08:00 - 10:30".to_string(),
+                    origin: "Work".to_string(),
+                    desc: "Emails".to_string(),
+                },
+                Block {
+                    period_str: "14:00 - 14:30".to_string(),
+                    origin: "Personal".to_string(),
+                    desc: "Walk".to_string(),
+                },
+            ],
+        };
+
+        let blocks = day_plan.only_original_blocks();
+
+        assert_eq!(blocks.len(), 1);
+        assert_eq!(blocks.get(0).unwrap().desc, "Emails");
+    }
 }
