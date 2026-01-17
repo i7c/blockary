@@ -5,12 +5,6 @@ use regex::Regex;
 
 use crate::{block::Block, markdown_access};
 
-pub trait DayPlanTrait {
-    fn only_original_blocks(&self) -> Vec<Block>;
-    fn with_updated_blocks(self, blocks: &Vec<Block>) -> Self;
-    fn day(&self) -> Option<NaiveDate>;
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Source {
     ObsMarkDown { abs_path: String, base_dir: String },

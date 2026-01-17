@@ -1,7 +1,6 @@
 use crate::blockary_cfg;
 use crate::cal_day_plan;
 use crate::day_plan;
-use crate::day_plan::DayPlanTrait;
 use crate::sync;
 use chrono::Local;
 use clap::{Parser, Subcommand};
@@ -55,7 +54,7 @@ pub fn run() {
                         if today == date {
                             if let Ok(ical_content) = fs::read_to_string(&ics_file) {
                                 if let Ok(cal_plan) =
-                                    cal_day_plan::CalDayPlan::from_icalendar(&ical_content, today)
+                                    cal_day_plan::from_icalendar(&ical_content, today)
                                 {
                                     synced_blocks.extend(cal_plan.blocks);
                                 }

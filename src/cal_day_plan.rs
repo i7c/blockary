@@ -1,77 +1,49 @@
-use crate::{block::Block, day_plan::DayPlanTrait};
+use crate::{
+    block::Block,
+    day_plan::{self, DayPlan},
+};
 use chrono::{FixedOffset, NaiveDate, NaiveDateTime, Timelike};
 use icalendar::{Calendar, CalendarDateTime, Component, DatePerhapsTime, Event};
 use std::str::FromStr;
 
-#[derive(Debug, Clone)]
-pub struct CalDayPlan {
-    pub origin: String,
-    pub blocks: Vec<Block>,
-    day: NaiveDate,
-}
+pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<DayPlan, String> {
+    let origin = "Calendar";
 
-impl CalDayPlan {
-    pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<CalDayPlan, String> {
-        let origin = "Calendar";
+    let calendar = ical
+        .parse::<Calendar>()
+        .map_err(|e| format!("Failed to parse the calendar: {}", e))?;
 
-        let calendar = ical
-            .parse::<Calendar>()
-            .map_err(|e| format!("Failed to parse the calendar: {}", e))?;
+    let blocks = calendar
+        .components
+        .iter()
+        .filter_map(|comp| comp.as_event())
+        .filter_map(|event| {
+            let start = date_perhaps_time_to_naive(event.get_start()?)?;
+            let end = date_perhaps_time_to_naive(event.get_end()?)?;
 
-        let blocks = calendar
-            .components
-            .iter()
-            .filter_map(|comp| comp.as_event())
-            .filter_map(|event| {
-                let start = date_perhaps_time_to_naive(event.get_start()?)?;
-                let end = date_perhaps_time_to_naive(event.get_end()?)?;
+            if start.date() != end.date() || start.date() != for_day {
+                None
+            } else {
+                let period = extract_period(event)?;
 
-                if start.date() != end.date() || start.date() != for_day {
-                    None
-                } else {
-                    let period = extract_period(event)?;
-
-                    Some(Block {
-                        period_str: period,
-                        origin: origin.to_string(),
-                        desc: event
-                            .get_description()
-                            .unwrap_or_else(|| "Busy")
-                            .to_string(),
-                    })
-                }
-            })
-            .collect();
-
-        Ok(CalDayPlan {
-            origin: origin.to_string(),
-            blocks: blocks,
-            day: for_day,
+                Some(Block {
+                    period_str: period,
+                    origin: origin.to_string(),
+                    desc: event
+                        .get_description()
+                        .unwrap_or_else(|| "Busy")
+                        .to_string(),
+                })
+            }
         })
-    }
-}
+        .collect();
 
-impl DayPlanTrait for CalDayPlan {
-    fn only_original_blocks(&self) -> Vec<Block> {
-        self.blocks
-            .iter()
-            .cloned()
-            .filter(|b| b.origin == self.origin)
-            .collect()
-    }
-
-    fn with_updated_blocks(self, blocks: &Vec<Block>) -> Self {
-        let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
-        updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
-        CalDayPlan {
-            blocks: updated_blocks,
-            ..self
-        }
-    }
-
-    fn day(&self) -> Option<NaiveDate> {
-        Some(self.day)
-    }
+    Ok(DayPlan {
+        origin: origin.to_string(),
+        blocks: blocks,
+        day: Some(for_day),
+        source: day_plan::Source::ICalendar,
+    })
 }
 
 fn date_perhaps_time_to_naive(dpt: DatePerhapsTime) -> Option<NaiveDateTime> {
@@ -153,7 +125,7 @@ END:VCALENDAR
 
         let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 1).unwrap();
 
-        let day_plan = CalDayPlan::from_icalendar(ical_str, for_day).unwrap();
+        let day_plan = from_icalendar(ical_str, for_day).unwrap();
         assert_eq!(day_plan.blocks.len(), 1);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "09:00 - 13:00");
