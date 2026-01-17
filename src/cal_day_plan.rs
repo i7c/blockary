@@ -104,9 +104,9 @@ BEGIN:VEVENT
 DTSTART:20251230T160000Z
 DTEND:20251230T200000Z
 DTSTAMP:20260101T181800Z
-UID:e9im6r31d5miqs35e9pmurj1dgmn6ubecct30eb7ehhm8sjdecpmgrracssnaqrcd1ij8s3
- kd1i74ehh@google.com
-ATTENDEE;X-NUM-GUESTS=0:mailto:constantin.weisser@gmail.com
+UID:xxxxxxxxxxxxxqs35e9pmurj1dgmn6ubecct30eb7ehhm8sjdecpmgrracssnaqrcd1ij8s3
+ kd1i123123@gmail.com
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
 RECURRENCE-ID:20251230T160000Z
 SUMMARY:Busy
 END:VEVENT
@@ -114,9 +114,9 @@ BEGIN:VEVENT
 DTSTART:20260101T120000Z
 DTEND:20260101T160000Z
 DTSTAMP:20260101T181800Z
-UID:e9im6r31d5miqs35e9pmurj1dgmn6ubecct36q1melp32s3gchq6qobgchqj4s3bd1h3arh
- j6pnmkehh@google.com
-ATTENDEE;X-NUM-GUESTS=0:mailto:constantin.weisser@gmail.com
+UID:xxxxxxxxxxxxxqs35e9pmurj1dgmn6ubecct36q1melp32s3gchq6qobgchqj4s3bd1h3arh
+ j6pn123123@gmail.com
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
 RECURRENCE-ID:20260101T120000Z
 SUMMARY:Busy
 END:VEVENT
@@ -129,6 +129,80 @@ END:VCALENDAR
         assert_eq!(day_plan.blocks.len(), 1);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "09:00 - 13:00");
+        assert_eq!(day_plan.blocks.get(0).unwrap().desc, "Busy");
+    }
+
+    #[test]
+    fn test_load_from_valid_icalendar_string_overlapping_blocks() {
+        let ical_str = "BEGIN:VCALENDAR
+PRODID:-//Google Inc//Google Calendar 70.9054//EN
+VERSION:2.0
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Privat
+X-WR-TIMEZONE:America/Sao_Paulo
+BEGIN:VEVENT
+DTSTART:20260117T130000Z
+DTEND:20260117T134500Z
+DTSTAMP:20260117T124851Z
+UID:xxxxxxxxxxxxxjtckejqbq123123@gmail.com
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
+SUMMARY:Busy
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260117T134500Z
+DTEND:20260117T141500Z
+DTSTAMP:20260117T124851Z
+UID:xxxxxxxxxxxxxrdnmue21k123123@gmail.com
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
+SUMMARY:Busy
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20251218T150000Z
+DTEND:20251218T160000Z
+DTSTAMP:20260117T124851Z
+UID:xxxxxxxxxxxxx3-4419-BB0F-6A74FC4C37A9
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
+SUMMARY:Busy
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260102T210000Z
+DTEND:20260102T220000Z
+DTSTAMP:20260117T124851Z
+UID:xxxxxxxxxxxxxnmrlcmvr0123123@gmail.com
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
+SUMMARY:Busy
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20251201T130000Z
+DTEND:20251201T140000Z
+DTSTAMP:20260117T124851Z
+UID:xxxxxxxxxxxxx4-425C-80D6-F29E185406F1
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
+SUMMARY:Busy
+END:VEVENT
+BEGIN:VEVENT
+DTSTART:20260117T131500Z
+DTEND:20260117T140000Z
+DTSTAMP:20260117T124851Z
+UID:xxxxxxxxxxxxxm1rmrirnj123123@gmail.com
+ATTENDEE;X-NUM-GUESTS=0:mailto:xyzxyzxyzxyz@gmail.com
+SUMMARY:Busy
+END:VEVENT
+END:VCALENDAR";
+
+        let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 17).unwrap();
+
+        let day_plan = from_icalendar(ical_str, for_day).unwrap();
+        assert_eq!(day_plan.blocks.len(), 3);
+        assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
+        assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "10:00 - 10:45");
+        assert_eq!(day_plan.blocks.get(0).unwrap().desc, "Busy");
+        assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
+        assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "10:00 - 10:45");
+        assert_eq!(day_plan.blocks.get(0).unwrap().desc, "Busy");
+        assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
+        assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "10:00 - 10:45");
         assert_eq!(day_plan.blocks.get(0).unwrap().desc, "Busy");
     }
 
