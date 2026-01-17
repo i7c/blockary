@@ -40,31 +40,24 @@ pub fn run() {
 
             let today = Local::now().date_naive();
 
-            let all_day_plans = sync::all_day_plans_from_config(config);
+            let mut all_day_plans = sync::all_day_plans_from_config(config);
+
+            if let Some(ref ics_file) = ics_file {
+                if let Ok(ical_content) = fs::read_to_string(&ics_file) {
+                    if let Ok(cal_plan) = cal_day_plan::from_icalendar(&ical_content, today) {
+                        all_day_plans.push(cal_plan);
+                    }
+                } else {
+                    println!("Could not open ICS file, continue without ...");
+                }
+            }
+
             let day_plans_by_note_id = sync::day_plans_by_day(all_day_plans);
 
             print_sync_stats(&day_plans_by_note_id);
 
             for (_id, plans) in day_plans_by_note_id {
-                let mut synced_blocks = day_plan::original_blocks_from_all(&plans);
-
-                if let Some(ref ics_file) = ics_file {
-                    let dp = plans.get(0).unwrap();
-                    if let Some(date) = dp.day() {
-                        if today == date {
-                            if let Ok(ical_content) = fs::read_to_string(&ics_file) {
-                                if let Ok(cal_plan) =
-                                    cal_day_plan::from_icalendar(&ical_content, today)
-                                {
-                                    synced_blocks.extend(cal_plan.blocks);
-                                }
-                            } else {
-                                println!("Could not open ICS file, continue without ...");
-                            }
-                        }
-                    }
-                }
-
+                let synced_blocks = day_plan::original_blocks_from_all(&plans);
                 for plan in plans {
                     plan.with_updated_blocks(&synced_blocks)
                         .write_to_daily_file();
