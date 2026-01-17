@@ -44,14 +44,7 @@ pub fn run() {
             let all_day_plans = sync::all_day_plans_from_config(config);
             let day_plans_by_note_id = sync::day_plans_by_day(all_day_plans);
 
-            let sync_count = day_plans_by_note_id
-                .iter()
-                .filter(|(_id, day_plans)| day_plans.len() > 1)
-                .count();
-            println!(
-                "{sync_count} of {} days will be synced",
-                day_plans_by_note_id.len()
-            );
+            print_sync_stats(&day_plans_by_note_id);
 
             for (_id, plans) in day_plans_by_note_id {
                 let mut synced_blocks = day_plan::original_blocks_from_all(&plans);
@@ -80,4 +73,17 @@ pub fn run() {
             }
         }
     }
+}
+
+fn print_sync_stats(
+    day_plans_by_note_id: &std::collections::HashMap<chrono::NaiveDate, Vec<day_plan::DayPlan>>,
+) {
+    let sync_count = day_plans_by_note_id
+        .iter()
+        .filter(|(_id, day_plans)| day_plans.len() > 1)
+        .count();
+    println!(
+        "{sync_count} of {} days will be synced",
+        day_plans_by_note_id.len()
+    );
 }
