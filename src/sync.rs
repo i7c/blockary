@@ -1,6 +1,6 @@
 use crate::blockary_cfg::Config;
-use crate::day_plan::DayPlanTrait;
-use crate::md_day_plan::MarkdownDayPlan;
+use crate::day_plan::DayPlan;
+use crate::md_daily_file;
 use chrono::NaiveDate;
 use std::collections::HashMap;
 use std::fs;
@@ -18,17 +18,17 @@ fn find_files(root: &str) -> Vec<PathBuf> {
         .collect()
 }
 
-pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<MarkdownDayPlan> {
+pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
     let markdown_files = find_files(root);
 
     println!("Loading {} files from {}", markdown_files.len(), origin);
 
-    let mut dps: Vec<MarkdownDayPlan> = Vec::new();
+    let mut dps: Vec<DayPlan> = Vec::new();
     for md_file_path in markdown_files {
         let md_file_path = md_file_path.to_str().unwrap();
         match fs::read_to_string(md_file_path) {
             Ok(c) => {
-                dps.push(MarkdownDayPlan::from_daily_file_md(
+                dps.push(md_daily_file::day_plan_from_daily_file_md(
                     &c,
                     origin,
                     md_file_path,
@@ -43,7 +43,7 @@ pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<MarkdownDayPlan
     dps
 }
 
-pub fn all_day_plans_from_config(config: Config) -> Vec<MarkdownDayPlan> {
+pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
     config
         .origins
         .iter()
@@ -52,10 +52,8 @@ pub fn all_day_plans_from_config(config: Config) -> Vec<MarkdownDayPlan> {
         .collect()
 }
 
-pub fn day_plans_by_day(
-    all_day_plans: Vec<MarkdownDayPlan>,
-) -> HashMap<NaiveDate, Vec<MarkdownDayPlan>> {
-    let mut day_plans_by_note_id: HashMap<NaiveDate, Vec<MarkdownDayPlan>> = HashMap::new();
+pub fn day_plans_by_day(all_day_plans: Vec<DayPlan>) -> HashMap<NaiveDate, Vec<DayPlan>> {
+    let mut day_plans_by_note_id: HashMap<NaiveDate, Vec<DayPlan>> = HashMap::new();
     for dp in all_day_plans {
         let Some(key) = dp.day() else { continue };
         day_plans_by_note_id

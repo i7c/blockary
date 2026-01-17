@@ -1,7 +1,7 @@
 use crate::blockary_cfg;
 use crate::cal_day_plan;
+use crate::day_plan;
 use crate::day_plan::DayPlanTrait;
-use crate::md_day_plan;
 use crate::sync;
 use chrono::Local;
 use clap::{Parser, Subcommand};
@@ -54,7 +54,7 @@ pub fn run() {
             );
 
             for (_id, plans) in day_plans_by_note_id {
-                let mut synced_blocks = md_day_plan::original_blocks_from_all(&plans);
+                let mut synced_blocks = day_plan::original_blocks_from_all(&plans);
 
                 if let Some(ref ics_file) = ics_file {
                     let dp = plans.get(0).unwrap();

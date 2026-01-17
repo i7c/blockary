@@ -1,9 +1,9 @@
-use std::str::FromStr;
+use std::{fs, str::FromStr};
 
 use chrono::NaiveDate;
 use regex::Regex;
 
-use crate::block::Block;
+use crate::{block::Block, markdown_access};
 
 pub trait DayPlanTrait {
     fn only_original_blocks(&self) -> Vec<Block>;
@@ -22,11 +22,11 @@ pub struct DayPlan {
     pub origin: String,
     pub blocks: Vec<Block>,
     pub day: Option<NaiveDate>,
-    source: Source,
+    pub source: Source,
 }
 
 impl DayPlan {
-    fn only_original_blocks(&self) -> Vec<Block> {
+    pub fn only_original_blocks(&self) -> Vec<Block> {
         self.blocks
             .iter()
             .cloned()
@@ -34,7 +34,7 @@ impl DayPlan {
             .collect()
     }
 
-    fn with_updated_blocks(self, blocks: &Vec<Block>) -> Self {
+    pub fn with_updated_blocks(self, blocks: &Vec<Block>) -> Self {
         let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
         updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));
         DayPlan {
@@ -43,7 +43,7 @@ impl DayPlan {
         }
     }
 
-    fn day(&self) -> Option<NaiveDate> {
+    pub fn day(&self) -> Option<NaiveDate> {
         match self.day {
             Some(_) => return self.day.clone(),
             _ => {
@@ -52,6 +52,37 @@ impl DayPlan {
                 } else {
                     None
                 }
+            }
+        }
+    }
+
+    pub fn write_to_daily_file(&self) {
+        let Source::ObsMarkDown {
+            abs_path,
+            base_dir: _,
+        } = &self.source
+        else {
+            return;
+        };
+
+        let reload_md_content = fs::read_to_string(&abs_path);
+        match reload_md_content {
+            Ok(c) => {
+                let section_lines = &self
+                    .blocks
+                    .iter()
+                    .map(|b| b.to_block_string(b.origin != self.origin))
+                    .map(|bs| format!("- {}", bs))
+                    .collect();
+                let md_with_updated_section =
+                    markdown_access::update_section_lines(section_lines, "Time Blocks", &c);
+
+                fs::write(&abs_path, md_with_updated_section).expect(
+                    "Could not write file. For safety, will cancel all further operations.",
+                );
+            }
+            Err(_) => {
+                println!("Skipping: Could not update file {}", &abs_path);
             }
         }
     }
