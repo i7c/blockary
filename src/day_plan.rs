@@ -35,7 +35,7 @@ impl DayPlanRepo {
     pub fn all(&self) -> Vec<DayPlan> {
         match &self.repo_type {
             DayPlanRepoType::MarkdownDirectory { dir } => {
-                day_plans_from_directory(&self.name, &dir)
+                day_plans_from_md_directory(&self.name, &dir)
             }
         }
     }
@@ -104,7 +104,7 @@ impl DayPlan {
     }
 }
 
-fn find_files(root: &str) -> Vec<PathBuf> {
+fn recursive_find_md_files(root: &str) -> Vec<PathBuf> {
     WalkDir::new(root)
         .into_iter()
         .filter_map(|entry| entry.ok())
@@ -138,8 +138,8 @@ pub fn day_plan_from_daily_file_md(
     }
 }
 
-pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
-    let markdown_files = find_files(root);
+pub fn day_plans_from_md_directory(origin: &str, root: &str) -> Vec<DayPlan> {
+    let markdown_files = recursive_find_md_files(root);
 
     let mut dps: Vec<DayPlan> = Vec::new();
     for md_file_path in markdown_files {
