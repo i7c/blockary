@@ -29,15 +29,7 @@ pub fn run() {
 
     match args.command {
         Commands::Sync { ics_file } => {
-            let mut config_path = env::home_dir()
-                .expect("$HOME is not set")
-                .into_os_string()
-                .into_string()
-                .unwrap();
-            config_path.push_str("/.config/blockary.toml");
-            let config = fs::read_to_string(config_path).expect("Could not read config file");
-            let config = blockary_cfg::load(&config);
-
+            let config = load_configuration();
             let today = Local::now().date_naive();
 
             let mut all_day_plans = sync::all_day_plans_from_config(config);
@@ -65,6 +57,18 @@ pub fn run() {
             }
         }
     }
+}
+
+fn load_configuration() -> blockary_cfg::Config {
+    let mut config_path = env::home_dir()
+        .expect("$HOME is not set")
+        .into_os_string()
+        .into_string()
+        .unwrap();
+    config_path.push_str("/.config/blockary.toml");
+    let config = fs::read_to_string(config_path).expect("Could not read config file");
+    let config = blockary_cfg::load(&config);
+    config
 }
 
 fn print_sync_stats(
