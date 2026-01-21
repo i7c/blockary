@@ -1,10 +1,58 @@
 use crate::{
     block::Block,
-    day_plan::{self, DayPlan},
+    day_plan::{self, DayPlan, Source},
 };
 use chrono::{FixedOffset, NaiveDate, NaiveDateTime, Timelike};
 use icalendar::{Calendar, CalendarDateTime, Component, DatePerhapsTime, Event};
-use std::str::FromStr;
+use std::{collections::HashMap, str::FromStr};
+
+pub fn day_plans_from_ical(ical: &str) -> Result<Vec<DayPlan>, String> {
+    let origin = "Calendar";
+
+    let calendar = ical
+        .parse::<Calendar>()
+        .map_err(|e| format!("Failed to parse the calendar: {}", e))?;
+
+    let single_day_events: Vec<&Event> = calendar
+        .components
+        .iter()
+        .filter_map(|comp| comp.as_event())
+        .filter(|event| event_date(event).is_some())
+        .collect();
+
+    let mut blocks_per_day: HashMap<NaiveDate, Vec<Block>> = HashMap::new();
+    for event in single_day_events {
+        match extract_period(event) {
+            Some(period_str) => {
+                let block = Block {
+                    period_str: period_str,
+                    origin: origin.to_string(),
+                    desc: event
+                        .get_description()
+                        .unwrap_or_else(|| "Busy")
+                        .to_string(),
+                };
+                blocks_per_day
+                    .entry(event_date(event).unwrap())
+                    .or_insert(Vec::new())
+                    .push(block);
+            }
+            None => continue,
+        }
+    }
+
+    let mut day_plans = Vec::new();
+    for (day, blocks) in blocks_per_day {
+        day_plans.push(DayPlan {
+            origin: origin.to_string(),
+            blocks: blocks,
+            day: Some(day),
+            source: Source::ICalendar,
+        });
+    }
+
+    Ok(day_plans)
+}
 
 pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<DayPlan, String> {
     let origin = "Calendar";
@@ -62,6 +110,17 @@ fn date_perhaps_time_to_naive(dpt: DatePerhapsTime) -> Option<NaiveDateTime> {
             }
         };
         return Some(naive);
+    } else {
+        None
+    }
+}
+
+fn event_date(event: &Event) -> Option<NaiveDate> {
+    let start = date_perhaps_time_to_naive(event.get_start()?)?;
+    let end = date_perhaps_time_to_naive(event.get_end()?)?;
+
+    if start.date() == end.date() {
+        Some(start.date())
     } else {
         None
     }
