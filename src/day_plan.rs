@@ -1,9 +1,21 @@
-use std::{fs, str::FromStr};
+use std::{fs, path::PathBuf, str::FromStr};
 
 use chrono::NaiveDate;
 use regex::Regex;
+use walkdir::WalkDir;
 
 use crate::{block::Block, markdown_access};
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DayPlanRepoType {
+    MarkdownDirectory { dir: String },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DayPlanRepo {
+    pub name: String,
+    pub repo_type: DayPlanRepoType,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Source {
@@ -17,6 +29,16 @@ pub struct DayPlan {
     pub blocks: Vec<Block>,
     pub day: Option<NaiveDate>,
     pub source: Source,
+}
+
+impl DayPlanRepo {
+    pub fn all(&self) -> Vec<DayPlan> {
+        match &self.repo_type {
+            DayPlanRepoType::MarkdownDirectory { dir } => {
+                day_plans_from_directory(&self.name, &dir)
+            }
+        }
+    }
 }
 
 impl DayPlan {
@@ -80,6 +102,60 @@ impl DayPlan {
             }
         }
     }
+}
+
+fn find_files(root: &str) -> Vec<PathBuf> {
+    WalkDir::new(root)
+        .into_iter()
+        .filter_map(|entry| entry.ok())
+        .filter(|entry| {
+            entry.file_type().is_file() && entry.file_name().to_str().unwrap().ends_with(".md")
+        })
+        .map(|entry| entry.path().to_path_buf())
+        .collect()
+}
+
+pub fn day_plan_from_daily_file_md(
+    markdown_content: &str,
+    origin: &str,
+    abs_path: &str,
+    base_dir: &str,
+) -> DayPlan {
+    let block_strings = markdown_access::read_items_under_section(markdown_content, "Time Blocks");
+    let blocks = block_strings
+        .iter()
+        .map(|bs| Block::parse_block_string(origin, bs).expect(""))
+        .collect();
+
+    DayPlan {
+        origin: origin.to_string(),
+        blocks: blocks,
+        source: Source::ObsMarkDown {
+            abs_path: abs_path.to_string(),
+            base_dir: base_dir.to_string(),
+        },
+        day: None,
+    }
+}
+
+pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
+    let markdown_files = find_files(root);
+
+    println!("Loading {} files from {}", markdown_files.len(), origin);
+
+    let mut dps: Vec<DayPlan> = Vec::new();
+    for md_file_path in markdown_files {
+        let md_file_path = md_file_path.to_str().unwrap();
+        match fs::read_to_string(md_file_path) {
+            Ok(c) => {
+                dps.push(day_plan_from_daily_file_md(&c, origin, md_file_path, root));
+            }
+            Err(_) => {
+                println!("Could not read file and will ignore: {}", md_file_path);
+            }
+        }
+    }
+    dps
 }
 
 fn maybe_extract_day_from_path(abs_path: &String, base_dir: &String) -> Option<NaiveDate> {

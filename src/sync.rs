@@ -1,6 +1,5 @@
 use crate::blockary_cfg::Config;
-use crate::day_plan::DayPlan;
-use crate::md_daily_file;
+use crate::day_plan::{self, DayPlan};
 use chrono::NaiveDate;
 use std::collections::HashMap;
 use std::fs;
@@ -18,36 +17,19 @@ fn find_files(root: &str) -> Vec<PathBuf> {
         .collect()
 }
 
-pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
-    let markdown_files = find_files(root);
-
-    println!("Loading {} files from {}", markdown_files.len(), origin);
-
-    let mut dps: Vec<DayPlan> = Vec::new();
-    for md_file_path in markdown_files {
-        let md_file_path = md_file_path.to_str().unwrap();
-        match fs::read_to_string(md_file_path) {
-            Ok(c) => {
-                dps.push(md_daily_file::day_plan_from_daily_file_md(
-                    &c,
-                    origin,
-                    md_file_path,
-                    root,
-                ));
-            }
-            Err(_) => {
-                println!("Could not read file and will ignore: {}", md_file_path);
-            }
-        }
-    }
-    dps
-}
-
 pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
     config
         .origins
         .iter()
-        .map(|(_, origin)| day_plans_from_directory(&origin.name, &origin.path))
+        .map(|(_, origin)| {
+            let repo = day_plan::DayPlanRepo {
+                name: origin.name.clone(),
+                repo_type: day_plan::DayPlanRepoType::MarkdownDirectory {
+                    dir: origin.path.clone(),
+                },
+            };
+            repo.all()
+        })
         .flatten()
         .collect()
 }
