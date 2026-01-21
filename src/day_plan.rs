@@ -4,11 +4,12 @@ use chrono::NaiveDate;
 use regex::Regex;
 use walkdir::WalkDir;
 
-use crate::{block::Block, markdown_access};
+use crate::{block::Block, cal_day_plan::day_plans_from_ical, markdown_access};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DayPlanRepoType {
     MarkdownDirectory { dir: String },
+    ICalString { ical: String },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -37,6 +38,7 @@ impl DayPlanRepo {
             DayPlanRepoType::MarkdownDirectory { dir } => {
                 day_plans_from_md_directory(&self.name, &dir)
             }
+            DayPlanRepoType::ICalString { ical } => day_plans_from_ical(ical),
         }
     }
 }

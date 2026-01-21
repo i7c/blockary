@@ -1,17 +1,15 @@
 use crate::{
     block::Block,
-    day_plan::{self, DayPlan, Source},
+    day_plan::{DayPlan, Source},
 };
 use chrono::{FixedOffset, NaiveDate, NaiveDateTime, Timelike};
 use icalendar::{Calendar, CalendarDateTime, Component, DatePerhapsTime, Event};
 use std::{collections::HashMap, str::FromStr};
 
-pub fn day_plans_from_ical(ical: &str) -> Result<Vec<DayPlan>, String> {
+pub fn day_plans_from_ical(ical: &str) -> Vec<DayPlan> {
     let origin = "Calendar";
 
-    let calendar = ical
-        .parse::<Calendar>()
-        .map_err(|e| format!("Failed to parse the calendar: {}", e))?;
+    let calendar = ical.parse::<Calendar>().unwrap();
 
     let single_day_events: Vec<&Event> = calendar
         .components
@@ -51,23 +49,23 @@ pub fn day_plans_from_ical(ical: &str) -> Result<Vec<DayPlan>, String> {
         });
     }
 
-    Ok(day_plans)
+    day_plans
 }
 
-pub fn day_plan_from_ical(ical: &str, for_day: NaiveDate) -> Result<DayPlan, String> {
-    let day_plans = day_plans_from_ical(ical)?;
+pub fn day_plan_from_ical(ical: &str, for_day: NaiveDate) -> DayPlan {
+    let day_plans = day_plans_from_ical(ical);
 
     for dp in day_plans {
         if dp.day == Some(for_day) {
-            return Ok(dp);
+            return dp;
         }
     }
-    Ok(DayPlan {
+    DayPlan {
         origin: "Calendar".to_string(),
         blocks: Vec::new(),
         day: Some(for_day),
         source: Source::ICalendar,
-    })
+    }
 }
 
 fn date_perhaps_time_to_naive(dpt: DatePerhapsTime) -> Option<NaiveDateTime> {
@@ -160,7 +158,7 @@ END:VCALENDAR
 
         let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 1).unwrap();
 
-        let day_plan = day_plan_from_ical(ical_str, for_day).unwrap();
+        let day_plan = day_plan_from_ical(ical_str, for_day);
         assert_eq!(day_plan.blocks.len(), 1);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "09:00 - 13:00");
@@ -228,7 +226,7 @@ END:VCALENDAR";
 
         let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 17).unwrap();
 
-        let day_plan = day_plan_from_ical(ical_str, for_day).unwrap();
+        let day_plan = day_plan_from_ical(ical_str, for_day);
         assert_eq!(day_plan.blocks.len(), 3);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "10:00 - 10:45");
@@ -440,7 +438,7 @@ SUMMARY:Busy
 END:VEVENT
 END:VCALENDAR";
 
-        let day_plans = day_plans_from_ical(ical_str).unwrap();
+        let day_plans = day_plans_from_ical(ical_str);
 
         assert_eq!(day_plans.len(), 16);
     }
