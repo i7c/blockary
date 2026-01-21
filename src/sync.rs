@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
     config
-        .origins
+        .dirs
         .iter()
         .map(|(_, origin)| {
             let repo = day_plan::DayPlanRepo {
