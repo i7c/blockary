@@ -2,20 +2,6 @@ use crate::blockary_cfg::Config;
 use crate::day_plan::{self, DayPlan};
 use chrono::NaiveDate;
 use std::collections::HashMap;
-use std::fs;
-use std::path::PathBuf;
-use walkdir::WalkDir;
-
-fn find_files(root: &str) -> Vec<PathBuf> {
-    WalkDir::new(root)
-        .into_iter()
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| {
-            entry.file_type().is_file() && entry.file_name().to_str().unwrap().ends_with(".md")
-        })
-        .map(|entry| entry.path().to_path_buf())
-        .collect()
-}
 
 pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
     config
