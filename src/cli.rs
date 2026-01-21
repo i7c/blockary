@@ -36,7 +36,7 @@ pub fn run() {
 
             if let Some(ref ics_file) = ics_file {
                 if let Ok(ical_content) = fs::read_to_string(&ics_file) {
-                    if let Ok(cal_plan) = cal_day_plan::from_icalendar(&ical_content, today) {
+                    if let Ok(cal_plan) = cal_day_plan::day_plan_from_ical(&ical_content, today) {
                         all_day_plans.push(cal_plan);
                     }
                 } else {

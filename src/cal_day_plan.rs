@@ -54,43 +54,19 @@ pub fn day_plans_from_ical(ical: &str) -> Result<Vec<DayPlan>, String> {
     Ok(day_plans)
 }
 
-pub fn from_icalendar(ical: &str, for_day: NaiveDate) -> Result<DayPlan, String> {
-    let origin = "Calendar";
+pub fn day_plan_from_ical(ical: &str, for_day: NaiveDate) -> Result<DayPlan, String> {
+    let day_plans = day_plans_from_ical(ical)?;
 
-    let calendar = ical
-        .parse::<Calendar>()
-        .map_err(|e| format!("Failed to parse the calendar: {}", e))?;
-
-    let blocks = calendar
-        .components
-        .iter()
-        .filter_map(|comp| comp.as_event())
-        .filter_map(|event| {
-            let start = date_perhaps_time_to_naive(event.get_start()?)?;
-            let end = date_perhaps_time_to_naive(event.get_end()?)?;
-
-            if start.date() != end.date() || start.date() != for_day {
-                None
-            } else {
-                let period = extract_period(event)?;
-
-                Some(Block {
-                    period_str: period,
-                    origin: origin.to_string(),
-                    desc: event
-                        .get_description()
-                        .unwrap_or_else(|| "Busy")
-                        .to_string(),
-                })
-            }
-        })
-        .collect();
-
+    for dp in day_plans {
+        if dp.day == Some(for_day) {
+            return Ok(dp);
+        }
+    }
     Ok(DayPlan {
-        origin: origin.to_string(),
-        blocks: blocks,
+        origin: "Calendar".to_string(),
+        blocks: Vec::new(),
         day: Some(for_day),
-        source: day_plan::Source::ICalendar,
+        source: Source::ICalendar,
     })
 }
 
@@ -184,7 +160,7 @@ END:VCALENDAR
 
         let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 1).unwrap();
 
-        let day_plan = from_icalendar(ical_str, for_day).unwrap();
+        let day_plan = day_plan_from_ical(ical_str, for_day).unwrap();
         assert_eq!(day_plan.blocks.len(), 1);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "09:00 - 13:00");
@@ -252,7 +228,7 @@ END:VCALENDAR";
 
         let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 17).unwrap();
 
-        let day_plan = from_icalendar(ical_str, for_day).unwrap();
+        let day_plan = day_plan_from_ical(ical_str, for_day).unwrap();
         assert_eq!(day_plan.blocks.len(), 3);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "10:00 - 10:45");
