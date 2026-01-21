@@ -141,8 +141,6 @@ pub fn day_plan_from_daily_file_md(
 pub fn day_plans_from_directory(origin: &str, root: &str) -> Vec<DayPlan> {
     let markdown_files = find_files(root);
 
-    println!("Loading {} files from {}", markdown_files.len(), origin);
-
     let mut dps: Vec<DayPlan> = Vec::new();
     for md_file_path in markdown_files {
         let md_file_path = md_file_path.to_str().unwrap();
