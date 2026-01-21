@@ -6,8 +6,8 @@ use std::collections::HashMap;
 pub fn all_day_plans_from_config(config: Config) -> Vec<DayPlan> {
     let mut day_plans = Vec::new();
 
-
     for (_, origin) in &config.dirs {
+        println!("Load {} ({})", origin.name, origin.path);
         let repo = day_plan::DayPlanRepo {
             name: origin.name.clone(),
             repo_type: day_plan::DayPlanRepoType::MarkdownDirectory {
