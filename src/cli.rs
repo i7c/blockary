@@ -1,7 +1,7 @@
 use crate::blockary_cfg;
 use crate::cal_day_plan;
 use crate::day_plan;
-use crate::sync;
+use crate::sync::Sync;
 use chrono::Local;
 use clap::{Parser, Subcommand};
 use std::env;
@@ -28,21 +28,11 @@ pub fn run() {
     let args = Cli::parse();
 
     match args.command {
-        Commands::Sync { ics_file } => {
+        Commands::Sync { .. } => {
             let config = load_configuration();
-            let today = Local::now().date_naive();
+            let sync = Sync::from_config(&config);
 
-            let mut all_day_plans = sync::all_day_plans_from_config(config);
-
-            if let Some(ref ics_file) = ics_file {
-                if let Ok(ical_content) = fs::read_to_string(&ics_file) {
-                    all_day_plans.push(cal_day_plan::day_plan_from_ical(&ical_content, today));
-                } else {
-                    println!("Could not open ICS file, continue without ...");
-                }
-            }
-
-            let day_plans_by_note_id = sync::day_plans_by_day(all_day_plans);
+            let day_plans_by_note_id = sync.all_day_plans_by_day();
 
             print_sync_stats(&day_plans_by_note_id);
 
