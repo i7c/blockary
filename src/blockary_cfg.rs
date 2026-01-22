@@ -70,7 +70,10 @@ mod tests {
         assert_eq!(cfg.dirs.get("work").unwrap().name, "Work");
         assert_eq!(cfg.dirs.get("work").unwrap().path, "/home/foo/worknotes");
         assert_eq!(cfg.dirs.len(), 2);
-        assert_eq!(cfg.cals.unwrap().get("work").unwrap().uri, "https://ical.com/x");
+        assert_eq!(
+            cfg.cals.unwrap().get("work").unwrap().uri,
+            "https://ical.com/x"
+        );
     }
 
     #[test]
