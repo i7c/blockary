@@ -27,11 +27,11 @@ impl Block {
                 let desc = matches.get(4).map(|m| m.as_str().to_string());
 
                 if let Some(desc) = desc {
-                    return Ok(Block {
-                        period_str: period.unwrap_or("".to_string()),
-                        origin: origin.unwrap_or(default_origin.to_string()),
-                        desc,
-                    });
+                    return Ok(Block::new(
+                        &period.unwrap_or("".to_string()),
+                        &origin.unwrap_or(default_origin.to_string()),
+                        &desc,
+                    ));
                 } else {
                     return Err("Blockstring must have at least a description".to_string());
                 }
