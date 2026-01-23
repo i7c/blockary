@@ -11,6 +11,14 @@ pub struct Block {
 }
 
 impl Block {
+    pub fn new(period_str: &str, origin: &str, desc: &str) -> Self {
+        Block {
+            period_str: period_str.to_string(),
+            origin: origin.to_string(),
+            desc: desc.to_string(),
+        }
+    }
+
     pub fn parse_block_string(default_origin: &str, input: &str) -> Result<Self, String> {
         match Regex::new(BLOCKSTRING_REGEX).unwrap().captures(&input) {
             Some(matches) => {

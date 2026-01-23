@@ -22,14 +22,11 @@ pub fn day_plans_from_ical(ical: &str) -> Vec<DayPlan> {
     for event in single_day_events {
         match extract_period(event) {
             Some(period_str) => {
-                let block = Block {
-                    period_str: period_str,
-                    origin: origin.to_string(),
-                    desc: event
-                        .get_description()
-                        .unwrap_or_else(|| "Busy")
-                        .to_string(),
-                };
+                let block = Block::new(
+                    &period_str,
+                    origin,
+                    event.get_description().unwrap_or_else(|| "Busy"),
+                );
                 blocks_per_day
                     .entry(event_date(event).unwrap())
                     .or_insert(Vec::new())

@@ -1,8 +1,6 @@
 use crate::blockary_cfg;
-use crate::cal_day_plan;
 use crate::day_plan;
 use crate::sync::Sync;
-use chrono::Local;
 use clap::{Parser, Subcommand};
 use std::env;
 use std::fs;
