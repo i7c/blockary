@@ -41,6 +41,14 @@ impl DayPlanRepo {
             DayPlanRepoType::ICalString { ical } => day_plans_from_ical(ical),
         }
     }
+
+    pub fn all_of_day(&self, day: NaiveDate) -> Vec<DayPlan> {
+        self.all()
+            .iter()
+            .filter(|day_plan| day_plan.day() == Some(day))
+            .map(|dp| dp.to_owned())
+            .collect()
+    }
 }
 
 impl DayPlan {

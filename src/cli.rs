@@ -1,5 +1,6 @@
 use crate::blockary_cfg;
 use crate::day_plan;
+use crate::day_plan::DayPlanRepo;
 use crate::sync::Sync;
 use clap::{Parser, Subcommand};
 use std::env;
@@ -20,16 +21,20 @@ enum Commands {
         #[arg(short, long)]
         ics_file: Option<String>,
     },
+    Spent {
+        #[arg(short, long)]
+        origin: String,
+    },
 }
 
 pub fn run() {
     let args = Cli::parse();
+    let config = load_configuration();
+    let today = chrono::Local::now().date_naive();
 
     match args.command {
         Commands::Sync { .. } => {
-            let config = load_configuration();
             let sync = Sync::from_config(&config);
-
             let day_plans_by_note_id = sync.all_day_plans_by_day();
 
             print_sync_stats(&day_plans_by_note_id);
@@ -42,7 +47,40 @@ pub fn run() {
                 }
             }
         }
+        Commands::Spent { origin } => {
+            let Some(origin) = config.dirs.get(&origin) else {
+                println!("Fatal: No such origin {origin}.");
+                return;
+            };
+
+            let repo = DayPlanRepo {
+                name: origin.name.clone(),
+                repo_type: day_plan::DayPlanRepoType::MarkdownDirectory {
+                    dir: origin.path.clone(),
+                },
+            };
+
+            let total_duration_today =
+                repo.all_of_day(today).iter().fold(0, |total_duration, dp| {
+                    total_duration
+                        + dp.only_original_blocks().iter().fold(0, |acc, b| {
+                            let (h, m) = minutes_to_hours_minutes(b.duration);
+                            println!("{:02}:{:02} - {}", h, m, b.desc);
+                            acc + b.duration
+                        })
+                });
+
+            let (hours, minutes) = minutes_to_hours_minutes(total_duration_today);
+            println!("--:--");
+            println!("{:02}:{:02} on {} today", hours, minutes, origin.name);
+        }
     }
+}
+
+fn minutes_to_hours_minutes(total_duration_today: u16) -> (u16, u16) {
+    let hours = total_duration_today / 60;
+    let minutes = total_duration_today % 60;
+    (hours, minutes)
 }
 
 fn load_configuration() -> blockary_cfg::Config {
