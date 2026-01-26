@@ -246,4 +246,10 @@ mod tests {
         );
         assert_eq!(b.to_block_string(false), "10:00 - 11:00 Buy Coffee");
     }
+
+    #[test]
+    fn test_maximum_duration() {
+        let b = Block::new("00:00 - 23:59", "banana", "asdf");
+        assert_eq!(b.duration, 1439);
+    }
 }
