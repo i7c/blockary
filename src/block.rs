@@ -8,6 +8,7 @@ pub struct Block {
     pub period_str: String,
     pub origin: String,
     pub desc: String,
+    pub duration: u16,
 }
 
 impl Block {
@@ -16,6 +17,7 @@ impl Block {
             period_str: period_str.to_string(),
             origin: origin.to_string(),
             desc: desc.to_string(),
+            duration: duration_of_period(period_str).unwrap_or_else(|| 30),
         }
     }
 
@@ -49,6 +51,36 @@ impl Block {
     }
 }
 
+fn duration_of_period(period: &str) -> Option<u16> {
+    let parts: Vec<&str> = period.split("-").map(|s| s.trim()).collect();
+
+    if parts.len() != 2 {
+        return None;
+    }
+
+    let start_minutes = parse_to_minutes(parts[0])?;
+    let end_minutes = parse_to_minutes(parts[1])?;
+
+    // Since times are always on the same day, end should be >= start
+    if end_minutes >= start_minutes {
+        Some(end_minutes - start_minutes)
+    } else {
+        None
+    }
+}
+
+fn parse_to_minutes(time_str: &str) -> Option<u16> {
+    let mut parts = time_str.split(':');
+    let hours: u32 = parts.next()?.parse().ok()?;
+    let minutes: u32 = parts.next()?.parse().ok()?;
+
+    if hours < 24 && minutes < 60 {
+        Some((hours * 60 + minutes).try_into().unwrap())
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -67,6 +99,7 @@ mod tests {
                 period_str: "08:00 - 09:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence".to_string(),
+                duration: 60,
             }
         );
     }
@@ -82,6 +115,7 @@ mod tests {
                 period_str: "07:30 - 08:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence".to_string(),
+                duration: 30,
             }
         );
     }
@@ -100,6 +134,7 @@ mod tests {
                 period_str: "07:30 - 08:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence: talk to [[Lars]] later".to_string(),
+                duration: 30,
             }
         );
     }
@@ -114,6 +149,7 @@ mod tests {
                 period_str: "07:30 - 08:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "1on1 with Hans".to_string(),
+                duration: 30,
             }
         );
     }
@@ -128,6 +164,7 @@ mod tests {
                 period_str: "".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Just some text".to_string(),
+                duration: 30,
             }
         );
     }
@@ -142,6 +179,7 @@ mod tests {
                 period_str: "10:00 - 11:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "".to_string(),
+                duration: 60,
             }
         );
     }
@@ -156,6 +194,7 @@ mod tests {
                 period_str: "10:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "Do something".to_string(),
+                duration: 30,
             }
         );
     }
@@ -172,6 +211,7 @@ mod tests {
                 period_str: "".to_string(),
                 origin: "Personal".to_string(),
                 desc: "A desc with random period from 10:00 - 11:00".to_string(),
+                duration: 30,
             }
         );
     }
@@ -186,6 +226,7 @@ mod tests {
                 period_str: "10:00 - 11:00".to_string(),
                 origin: "Personal".to_string(),
                 desc: "10:00 - 11:00".to_string(),
+                duration: 60,
             }
         );
     }
@@ -196,6 +237,7 @@ mod tests {
             period_str: "10:00 - 11:00".to_string(),
             origin: "Personal".to_string(),
             desc: "Buy Coffee".to_string(),
+            duration: 60,
         };
 
         assert_eq!(

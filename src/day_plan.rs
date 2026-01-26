@@ -196,16 +196,8 @@ mod tests {
         let dp1 = DayPlan {
             origin: "Work".to_string(),
             blocks: vec![
-                Block {
-                    period_str: "08:00 - 10:30".to_string(),
-                    origin: "Work".to_string(),
-                    desc: "Emails".to_string(),
-                },
-                Block {
-                    period_str: "14:00 - 14:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Walk".to_string(),
-                },
+                Block::new("08:00 - 10:30", "Work", "Emails"),
+                Block::new("14:00 - 14:30", "Personal", "Walk"),
             ],
             day: None,
             source: Source::ObsMarkDown {
@@ -214,11 +206,8 @@ mod tests {
             },
         };
 
-        let updated = dp1.with_updated_blocks(&vec![Block {
-            period_str: "00:00 - 05:30".to_string(),
-            origin: "Personal".to_string(),
-            desc: "Sleep".to_string(),
-        }]);
+        let updated =
+            dp1.with_updated_blocks(&vec![Block::new("00:00 - 05:30", "Personal", "Sleep")]);
 
         assert_eq!(
             updated.source,
@@ -243,16 +232,8 @@ mod tests {
                 base_dir: "/work".to_string(),
             },
             blocks: vec![
-                Block {
-                    period_str: "08:00 - 10:30".to_string(),
-                    origin: "Work".to_string(),
-                    desc: "Emails".to_string(),
-                },
-                Block {
-                    period_str: "14:00 - 14:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Walk".to_string(),
-                },
+                Block::new("08:00 - 10:30", "Work", "Emails"),
+                Block::new("14:00 - 14:30", "Personal", "Walk"),
             ],
         };
 
@@ -323,16 +304,8 @@ mod tests {
                 base_dir: "/work".to_string(),
             },
             blocks: vec![
-                Block {
-                    period_str: "08:00 - 10:30".to_string(),
-                    origin: "Work".to_string(),
-                    desc: "Emails".to_string(),
-                },
-                Block {
-                    period_str: "14:00 - 14:30".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Walk".to_string(),
-                },
+                Block::new("08:00 - 10:30", "Work", "Emails"),
+                Block::new("14:00 - 14:30", "Personal", "Walk"),
             ],
         };
 
@@ -344,16 +317,8 @@ mod tests {
                 base_dir: "/work".to_string(),
             },
             blocks: vec![
-                Block {
-                    period_str: "09:00 - 10:00".to_string(),
-                    origin: "Personal".to_string(),
-                    desc: "Make coffee".to_string(),
-                },
-                Block {
-                    period_str: "14:00 - 14:30".to_string(),
-                    origin: "Hobby".to_string(),
-                    desc: "Walk".to_string(),
-                },
+                Block::new("09:00 - 10:00", "Personal", "Make coffee"),
+                Block::new("14:00 - 14:30", "Hobby", "Walk"),
             ],
         };
 
