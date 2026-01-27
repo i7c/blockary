@@ -1,5 +1,7 @@
 use regex::Regex;
 
+use crate::tag::{parse_tags, Tag};
+
 const BLOCKSTRING_REGEX: &str =
     r"^\s*(\d{2}:\d{2}\s*-\s*\d{2}:\d{2}|\d{2}:\d{2})?\s*(\(([^\)]*)\))?\s*(.*)";
 
@@ -9,6 +11,7 @@ pub struct Block {
     pub origin: String,
     pub desc: String,
     pub duration: u16,
+    pub tags: Vec<Tag>,
 }
 
 impl Block {
@@ -18,6 +21,7 @@ impl Block {
             origin: origin.to_string(),
             desc: desc.to_string(),
             duration: duration_of_period(period_str).unwrap_or_else(|| 30),
+            tags: parse_tags(period_str),
         }
     }
 
