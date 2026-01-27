@@ -21,6 +21,7 @@ enum Commands {
         #[arg(short, long)]
         ics_file: Option<String>,
     },
+    /// Shows how much time was spent on certain things
     Spent {
         #[arg(short, long)]
         origin: String,
