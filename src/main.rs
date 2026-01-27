@@ -5,6 +5,7 @@ mod cli;
 mod day_plan;
 mod markdown_access;
 mod sync;
+mod tag;
 
 fn main() {
     cli::run();
