@@ -66,8 +66,20 @@ pub fn run() {
                     total_duration
                         + dp.only_original_blocks().iter().fold(0, |acc, b| {
                             let (h, m) = minutes_to_hours_minutes(b.duration);
-                            println!("{:02}:{:02} - {}", h, m, b.desc);
-                            acc + b.duration
+
+                            if b.tags
+                                .iter()
+                                .any(|tag| match tag.tagls.get(0).map(|s| s.as_ref()) {
+                                    Some("break") => true,
+                                    _ => false,
+                                })
+                            {
+                                println!("{:02}:{:02} - {} (IGNORED)", h, m, b.desc);
+                                acc
+                            } else {
+                                println!("{:02}:{:02} - {}", h, m, b.desc);
+                                acc + b.duration
+                            }
                         })
                 });
 

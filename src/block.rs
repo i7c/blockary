@@ -21,7 +21,7 @@ impl Block {
             origin: origin.to_string(),
             desc: desc.to_string(),
             duration: duration_of_period(period_str).unwrap_or_else(|| 30),
-            tags: parse_tags(period_str),
+            tags: parse_tags(desc),
         }
     }
 
@@ -104,6 +104,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence".to_string(),
                 duration: 60,
+                tags: vec![],
             }
         );
     }
@@ -120,6 +121,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence".to_string(),
                 duration: 30,
+                tags: vec![],
             }
         );
     }
@@ -139,6 +141,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "Morning Correspondence: talk to [[Lars]] later".to_string(),
                 duration: 30,
+                tags: vec![],
             }
         );
     }
@@ -154,6 +157,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "1on1 with Hans".to_string(),
                 duration: 30,
+                tags: vec![],
             }
         );
     }
@@ -169,6 +173,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "Just some text".to_string(),
                 duration: 30,
+                tags: vec![],
             }
         );
     }
@@ -184,6 +189,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "".to_string(),
                 duration: 60,
+                tags: vec![],
             }
         );
     }
@@ -199,6 +205,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "Do something".to_string(),
                 duration: 30,
+                tags: vec![],
             }
         );
     }
@@ -216,6 +223,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "A desc with random period from 10:00 - 11:00".to_string(),
                 duration: 30,
+                tags: vec![],
             }
         );
     }
@@ -231,6 +239,7 @@ mod tests {
                 origin: "Personal".to_string(),
                 desc: "10:00 - 11:00".to_string(),
                 duration: 60,
+                tags: vec![],
             }
         );
     }
@@ -242,6 +251,7 @@ mod tests {
             origin: "Personal".to_string(),
             desc: "Buy Coffee".to_string(),
             duration: 60,
+            tags: vec![],
         };
 
         assert_eq!(
@@ -255,5 +265,13 @@ mod tests {
     fn test_maximum_duration() {
         let b = Block::new("00:00 - 23:59", "banana", "asdf");
         assert_eq!(b.duration, 1439);
+    }
+
+    #[test]
+    fn test_tags_are_parsed_and_added() {
+        let b = Block::parse_block_string("none", "10:00 - 11:00 Buy coffee +chores +personal/tasks").unwrap();
+
+        assert_eq!(b.tags.get(0).unwrap().tagls, vec!["chores"]);
+        assert_eq!(b.tags.get(1).unwrap().tagls, vec!["personal", "tasks"]);
     }
 }
