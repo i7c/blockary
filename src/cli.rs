@@ -1,7 +1,6 @@
 use crate::blockary_cfg;
 use crate::cmd_spent;
 use crate::day_plan;
-use crate::day_plan::DayPlanRepo;
 use crate::sync::Sync;
 use clap::{Parser, Subcommand};
 use std::env;
@@ -23,10 +22,7 @@ enum Commands {
         ics_file: Option<String>,
     },
     /// Shows how much time was spent on certain things
-    Spent {
-        #[arg(short, long)]
-        origin: String,
-    },
+    Spent,
 }
 
 pub fn run() {
@@ -49,13 +45,11 @@ pub fn run() {
                 }
             }
         }
-        Commands::Spent { origin } => {
-            let Some(origin) = config.dirs.get(&origin) else {
-                println!("Fatal: No such origin {origin}.");
-                return;
-            };
-
-            cmd_spent::time_spent_in_origin(today, origin);
+        Commands::Spent => {
+            for (_, dir) in &config.dirs {
+                println!("\n> {}", dir.name);
+                cmd_spent::time_spent_in_origin(today, dir);
+            }
         }
     }
 }
