@@ -1,6 +1,6 @@
 use regex::Regex;
 
-use crate::tag::{parse_tags, Tag};
+use crate::tag::{Tag, parse_tags};
 
 const BLOCKSTRING_REGEX: &str =
     r"^\s*(\d{2}:\d{2}\s*-\s*\d{2}:\d{2}|\d{2}:\d{2})?\s*(\(([^\)]*)\))?\s*(.*)";
@@ -269,7 +269,9 @@ mod tests {
 
     #[test]
     fn test_tags_are_parsed_and_added() {
-        let b = Block::parse_block_string("none", "10:00 - 11:00 Buy coffee +chores +personal/tasks").unwrap();
+        let b =
+            Block::parse_block_string("none", "10:00 - 11:00 Buy coffee +chores +personal/tasks")
+                .unwrap();
 
         assert_eq!(b.tags.get(0).unwrap().tagls, vec!["chores"]);
         assert_eq!(b.tags.get(1).unwrap().tagls, vec!["personal", "tasks"]);
