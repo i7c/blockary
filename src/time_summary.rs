@@ -10,8 +10,6 @@ pub fn total_time_spent(all_of_day: Vec<day_plan::DayPlan>) -> u16 {
     let total_duration_today = all_of_day.iter().fold(0, |total_duration, dp| {
         total_duration
             + dp.only_original_blocks().iter().fold(0, |acc, b| {
-                let (h, m) = minutes_to_hours_minutes(b.duration);
-
                 if b.tags
                     .iter()
                     .any(|tag| match tag.tagls.get(0).map(|s| s.as_ref()) {

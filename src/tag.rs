@@ -7,12 +7,12 @@ pub fn parse_tags(input: &str) -> Vec<Tag> {
     let mut tags = Vec::new();
     let mut chars = input.char_indices().peekable();
 
-    while let Some((i, c)) = chars.next() {
+    while let Some((_, c)) = chars.next() {
         if c == '+' {
             // Check if there's at least one char after '+' and it's not whitespace
             if let Some(&(_, next_c)) = chars.peek() {
                 if !next_c.is_whitespace() {
-                    if let Some(tag) = parse_single_tag(input, &mut chars) {
+                    if let Some(tag) = parse_single_tag(&mut chars) {
                         tags.push(tag);
                     }
                 }
@@ -22,10 +22,7 @@ pub fn parse_tags(input: &str) -> Vec<Tag> {
     tags
 }
 
-fn parse_single_tag(
-    input: &str,
-    chars: &mut std::iter::Peekable<std::str::CharIndices>,
-) -> Option<Tag> {
+fn parse_single_tag(chars: &mut std::iter::Peekable<std::str::CharIndices>) -> Option<Tag> {
     let mut levels = Vec::new();
 
     loop {
@@ -33,9 +30,9 @@ fn parse_single_tag(
 
         match chars.peek() {
             // Case 1: Double Brackets [[...]]
-            Some(&(start_idx, '[')) => {
+            Some(&(_start_idx, '[')) => {
                 let mut bracket_count = 0;
-                while let Some((i, c)) = chars.next() {
+                while let Some((_, c)) = chars.next() {
                     current_level.push(c);
                     if c == '[' {
                         bracket_count += 1;
@@ -50,8 +47,8 @@ fn parse_single_tag(
                 }
             }
             // Case 2: Parentheses (...)
-            Some(&(start_idx, '(')) => {
-                while let Some((i, c)) = chars.next() {
+            Some(&(_start_idx, '(')) => {
+                while let Some((_, c)) = chars.next() {
                     current_level.push(c);
                     if c == ')' {
                         break;
