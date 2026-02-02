@@ -1,11 +1,13 @@
 use crate::blockary_cfg;
 use crate::day_plan;
 use crate::day_plan::DayPlanRepo;
+use crate::time_summary;
 
-fn minutes_to_hours_minutes(total_duration_today: u16) -> (u16, u16) {
-    let hours = total_duration_today / 60;
-    let minutes = total_duration_today % 60;
-    (hours, minutes)
+pub fn command(config: blockary_cfg::Config, today: chrono::NaiveDate) {
+    for (_, dir) in &config.dirs {
+        println!("\n> {}", dir.name);
+        time_spent_in_origin(today, dir);
+    }
 }
 
 pub fn time_spent_in_origin(today: chrono::NaiveDate, origin: &blockary_cfg::Dir) {
@@ -16,28 +18,10 @@ pub fn time_spent_in_origin(today: chrono::NaiveDate, origin: &blockary_cfg::Dir
         },
     };
 
-    let total_duration_today = repo.all_of_day(today).iter().fold(0, |total_duration, dp| {
-        total_duration
-            + dp.only_original_blocks().iter().fold(0, |acc, b| {
-                let (h, m) = minutes_to_hours_minutes(b.duration);
+    let all_of_day = repo.all_of_day(today);
 
-                if b.tags
-                    .iter()
-                    .any(|tag| match tag.tagls.get(0).map(|s| s.as_ref()) {
-                        Some("break") => true,
-                        _ => false,
-                    })
-                {
-                    println!("{:02}:{:02} - {} (IGNORED)", h, m, b.desc);
-                    acc
-                } else {
-                    println!("{:02}:{:02} - {}", h, m, b.desc);
-                    acc + b.duration
-                }
-            })
-    });
-
-    let (hours, minutes) = minutes_to_hours_minutes(total_duration_today);
+    let (hours, minutes) =
+        time_summary::minutes_to_hours_minutes(time_summary::total_time_spent(all_of_day));
     println!("--:--");
     println!("{:02}:{:02} on {} today", hours, minutes, origin.name);
 }
