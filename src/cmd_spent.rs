@@ -12,11 +12,11 @@ use crate::time_summary::minutes_to_hours_minutes;
 pub fn command(config: blockary_cfg::Config, today: chrono::NaiveDate) {
     for (_, dir) in &config.dirs {
         println!("\n> {}", dir.name);
-        time_spent_in_origin(today, dir);
+        time_spent_per_origin(today, dir);
     }
 }
 
-pub fn time_spent_in_origin(from_inclusive: chrono::NaiveDate, origin: &blockary_cfg::Dir) {
+pub fn time_spent_per_origin(from_inclusive: chrono::NaiveDate, origin: &blockary_cfg::Dir) {
     let repo = DayPlanRepo {
         name: origin.name.clone(),
         repo_type: day_plan::DayPlanRepoType::MarkdownDirectory {
