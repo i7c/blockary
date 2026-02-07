@@ -1,7 +1,11 @@
 use crate::blockary_cfg;
 use crate::cmd_spent;
 use crate::cmd_sync;
-use clap::{Parser, Subcommand};
+use chrono::Datelike;
+use chrono::Duration;
+use chrono::NaiveDate;
+use clap::{Parser, Subcommand, ValueEnum};
+use icalendar::Todo;
 use std::env;
 use std::fs;
 
@@ -13,6 +17,12 @@ struct Cli {
     command: Commands,
 }
 
+#[derive(Clone, ValueEnum, Debug)]
+enum TimeRange {
+    Today,
+    ThisWeek,
+}
+
 #[derive(Subcommand)]
 enum Commands {
     /// Sync between local markdown dayplan files
@@ -21,7 +31,10 @@ enum Commands {
         ics_file: Option<String>,
     },
     /// Shows how much time was spent on certain things
-    Spent,
+    Spent {
+        /// Show the time spent for this period
+        during: Option<TimeRange>,
+    },
 }
 
 pub fn run() {
@@ -33,9 +46,14 @@ pub fn run() {
         Commands::Sync { .. } => {
             cmd_sync::command(&config);
         }
-        Commands::Spent => {
-            cmd_spent::command(config, today);
-        }
+        Commands::Spent { during } => match during {
+            Some(TimeRange::Today) => cmd_spent::command(config, &today, &today),
+            Some(TimeRange::ThisWeek) => {
+                let (start, end) = get_week_bounds(&today);
+                cmd_spent::command(config, &start, &end);
+            }
+            _ => println!("Provide a valid period to report time spent!"),
+        },
     }
 }
 
@@ -49,4 +67,14 @@ fn load_configuration() -> blockary_cfg::Config {
     let config = fs::read_to_string(config_path).expect("Could not read config file");
     let config = blockary_cfg::load(&config);
     config
+}
+
+fn get_week_bounds(date: &NaiveDate) -> (NaiveDate, NaiveDate) {
+    // .weekday().number_from_monday() returns 1 for Mon, 7 for Sun
+    // Subtracting (1-indexed value - 1) gives us the distance back to Monday
+    let days_from_monday = date.weekday().number_from_monday() - 1;
+    let start_of_week = *date - Duration::days(days_from_monday as i64);
+    let end_of_week = start_of_week + Duration::days(6);
+
+    (start_of_week, end_of_week)
 }
