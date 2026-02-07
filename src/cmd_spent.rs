@@ -1,5 +1,6 @@
-use comfy_table::presets;
+use chrono::NaiveDate;
 use comfy_table::Table;
+use comfy_table::presets;
 
 use crate::block::Block;
 use crate::blockary_cfg;
@@ -33,7 +34,7 @@ pub fn time_spent_in_origin(from_inclusive: chrono::NaiveDate, origin: &blockary
     let tag_timings = time_summary::time_per_tag(&all_blocks, 0);
     let mut table = Table::new();
 
-    table.set_header(vec!["Tagl"]);
+    table.set_header(vec!["Tagl", "..", "..", "Time", "%"]);
     table.load_preset(presets::UTF8_FULL_CONDENSED);
     add_row_for_tagl(&tag_timings, &mut table, 0);
 
@@ -46,19 +47,25 @@ pub fn time_spent_in_origin(from_inclusive: chrono::NaiveDate, origin: &blockary
 }
 
 fn add_row_for_tagl(tag_timings: &Vec<time_summary::TagTime>, table: &mut Table, level: u8) {
+    let total = tag_timings.iter().fold(0, |acc, tt| acc + tt.minutes);
+
     for tt in tag_timings {
         let mut rowc = Vec::new();
         for _ in 0..level {
             rowc.push("".to_string());
         }
         rowc.push(tt.tag.clone());
-        for _ in level..3 {
+        for _ in level..2 {
             rowc.push("".to_string());
         }
+        // time
         let (hours, minutes) = minutes_to_hours_minutes(tt.minutes);
         rowc.push(format!("{:02}:{:02}", hours, minutes));
-        table.add_row(rowc);
 
+        // %
+        rowc.push(format!("{:3}%", (tt.minutes as u32 * 100) / total as u32));
+
+        table.add_row(rowc);
         add_row_for_tagl(&tt.sub_tags, table, level + 1);
 
         if level == 0 {
