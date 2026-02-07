@@ -71,6 +71,13 @@ impl DayPlan {
             .collect()
     }
 
+    pub fn only_original_blocks_slice(&self) -> Vec<&Block> {
+        self.blocks
+            .iter()
+            .filter(|b| b.origin == self.origin)
+            .collect()
+    }
+
     pub fn with_updated_blocks(self, blocks: &Vec<Block>) -> Self {
         let mut updated_blocks: Vec<Block> = blocks.iter().cloned().collect();
         updated_blocks.sort_by(|a, b| a.period_str.cmp(&b.period_str));

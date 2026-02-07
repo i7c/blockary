@@ -23,7 +23,7 @@ pub fn time_spent_in_origin(from_inclusive: chrono::NaiveDate, origin: &blockary
 
     let mut all_blocks: Vec<&Block> = Vec::new();
     for dp in &all_in_range {
-        for block in &dp.blocks {
+        for block in &dp.only_original_blocks_slice() {
             all_blocks.push(&block);
         }
     }
