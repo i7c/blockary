@@ -45,13 +45,9 @@ impl DayPlanRepo {
     pub fn all_between(&self, from_inclusive: NaiveDate, to_inclusive: NaiveDate) -> Vec<DayPlan> {
         self.all()
             .iter()
-            .filter(|day_plan| {
-                match day_plan.day() {
-                    Some(dpd) => {
-                        from_inclusive <= dpd && dpd <= to_inclusive
-                    },
-                    _ => false,
-                }
+            .filter(|day_plan| match day_plan.day() {
+                Some(dpd) => from_inclusive <= dpd && dpd <= to_inclusive,
+                _ => false,
             })
             .map(|dp| dp.to_owned())
             .collect()

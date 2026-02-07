@@ -1,3 +1,5 @@
+use comfy_table::Table;
+
 use crate::block::Block;
 use crate::blockary_cfg;
 use crate::day_plan;
@@ -10,7 +12,6 @@ pub fn command(config: blockary_cfg::Config, today: chrono::NaiveDate) {
         time_spent_in_origin(today, dir);
     }
 }
-
 
 pub fn time_spent_in_origin(from_inclusive: chrono::NaiveDate, origin: &blockary_cfg::Dir) {
     let repo = DayPlanRepo {
@@ -27,12 +28,32 @@ pub fn time_spent_in_origin(from_inclusive: chrono::NaiveDate, origin: &blockary
             all_blocks.push(&block);
         }
     }
-    time_summary::time_per_tag(&all_blocks, 0);
+    let tag_timings = time_summary::time_per_tag(&all_blocks, 0);
+    let mut table = Table::new();
 
-    
-    
+    add_row_for_tagl(&tag_timings, &mut table, 0);
+
+    println!("{table}");
+
     let (hours, minutes) =
         time_summary::minutes_to_hours_minutes(time_summary::total_time_spent(&all_in_range));
     println!("--:--");
     println!("{:02}:{:02} on {} today", hours, minutes, origin.name);
+}
+
+fn add_row_for_tagl(tag_timings: &Vec<time_summary::TagTime>, table: &mut Table, level: u8) {
+    for tt in tag_timings {
+        let mut rowc = Vec::new();
+        for _ in 0..level {
+            rowc.push("".to_string());
+        }
+        rowc.push(tt.tag.clone());
+        for _ in level..5 {
+            rowc.push("".to_string());
+        }
+        rowc.push(format!("{:04}", tt.minutes));
+        table.add_row(rowc);
+
+        add_row_for_tagl(&tt.sub_tags, table, level + 1);
+    }
 }
