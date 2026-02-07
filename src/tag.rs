@@ -8,7 +8,7 @@ pub fn parse_tags(input: &str) -> Vec<Tag> {
     let mut chars = input.char_indices().peekable();
 
     while let Some((_, c)) = chars.next() {
-        if c == '+' {
+        if c == '@' {
             // Check if there's at least one char after '+' and it's not whitespace
             if let Some(&(_, next_c)) = chars.peek() {
                 if !next_c.is_whitespace() {
@@ -58,7 +58,7 @@ fn parse_single_tag(chars: &mut std::iter::Peekable<std::str::CharIndices>) -> O
             // Case 3: Standard unquoted level
             _ => {
                 while let Some(&(_, c)) = chars.peek() {
-                    if c == '/' || c.is_whitespace() || c == '+' {
+                    if c == '/' || c.is_whitespace() || c == '@' {
                         break;
                     }
                     current_level.push(chars.next().unwrap().1);
