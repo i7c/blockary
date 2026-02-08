@@ -27,6 +27,8 @@ enum TimeRange {
     ThisMonth,
     /// The current calendar year
     ThisYear,
+    /// The calendar week before this one
+    LastWeek,
 }
 
 #[derive(Subcommand)]
@@ -64,6 +66,10 @@ pub fn run() {
             }
             Some(TimeRange::ThisYear) => {
                 let (start, end) = get_year_bounds(&today);
+                cmd_spent::command(config, &start, &end);
+            }
+            Some(TimeRange::LastWeek) => {
+                let (start, end) = get_week_bounds(&(today - Duration::days(7)));
                 cmd_spent::command(config, &start, &end);
             }
             _ => cmd_spent::command(config, &today, &today),
