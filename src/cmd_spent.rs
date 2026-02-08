@@ -53,7 +53,10 @@ pub fn time_spent_per_origin(
     let (hours, minutes) =
         time_summary::minutes_to_hours_minutes(time_summary::total_time_spent(&dps_in_range));
     println!("--:--");
-    println!("{:02}:{:02} on {} today", hours, minutes, origin.name);
+    println!(
+        "{:02}:{:02} on {} in this period",
+        hours, minutes, origin.name
+    );
 }
 
 fn add_row_for_tagl(tag_timings: &Vec<time_summary::TagTime>, table: &mut Table, level: u8) {

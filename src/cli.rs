@@ -19,8 +19,14 @@ struct Cli {
 
 #[derive(Clone, ValueEnum, Debug)]
 enum TimeRange {
+    /// The current day
     Today,
+    /// The current week, starts on a Monday
     ThisWeek,
+    /// The current calendar month
+    ThisMonth,
+    /// The current calendar year
+    ThisYear,
 }
 
 #[derive(Subcommand)]
@@ -52,6 +58,14 @@ pub fn run() {
                 let (start, end) = get_week_bounds(&today);
                 cmd_spent::command(config, &start, &end);
             }
+            Some(TimeRange::ThisMonth) => {
+                let (start, end) = get_month_bounds(&today);
+                cmd_spent::command(config, &start, &end);
+            }
+            Some(TimeRange::ThisYear) => {
+                let (start, end) = get_year_bounds(&today);
+                cmd_spent::command(config, &start, &end);
+            }
             _ => println!("Provide a valid period to report time spent!"),
         },
     }
@@ -77,4 +91,33 @@ fn get_week_bounds(date: &NaiveDate) -> (NaiveDate, NaiveDate) {
     let end_of_week = start_of_week + Duration::days(6);
 
     (start_of_week, end_of_week)
+}
+
+fn get_month_bounds(date: &NaiveDate) -> (NaiveDate, NaiveDate) {
+    let start_of_month = NaiveDate::from_ymd_opt(date.year(), date.month(), 1).unwrap();
+    let next_month_year = if date.month() == 12 {
+        date.year() + 1
+    } else {
+        date.year()
+    };
+    let next_month = if date.month() == 12 {
+        1
+    } else {
+        date.month() + 1
+    };
+
+    let first_of_next_month = NaiveDate::from_ymd_opt(next_month_year, next_month, 1).unwrap();
+    let end_of_month = first_of_next_month - Duration::days(1);
+
+    (start_of_month, end_of_month)
+}
+
+fn get_year_bounds(date: &NaiveDate) -> (NaiveDate, NaiveDate) {
+    let year = date.year();
+
+    // Years always start on Jan 1st and end on Dec 31st
+    let start_of_year = NaiveDate::from_ymd_opt(year, 1, 1).unwrap();
+    let end_of_year = NaiveDate::from_ymd_opt(year, 12, 31).unwrap();
+
+    (start_of_year, end_of_year)
 }
