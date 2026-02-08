@@ -19,7 +19,7 @@ struct Cli {
 
 #[derive(Clone, ValueEnum, Debug)]
 enum TimeRange {
-    /// The current day
+    /// The current day (default)
     Today,
     /// The current week, starts on a Monday
     ThisWeek,
@@ -66,7 +66,7 @@ pub fn run() {
                 let (start, end) = get_year_bounds(&today);
                 cmd_spent::command(config, &start, &end);
             }
-            _ => println!("Provide a valid period to report time spent!"),
+            _ => cmd_spent::command(config, &today, &today),
         },
     }
 }
