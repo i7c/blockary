@@ -270,7 +270,7 @@ mod tests {
     #[test]
     fn test_tags_are_parsed_and_added() {
         let b =
-            Block::parse_block_string("none", "10:00 - 11:00 Buy coffee +chores +personal/tasks")
+            Block::parse_block_string("none", "10:00 - 11:00 Buy coffee @chores @personal/tasks")
                 .unwrap();
 
         assert_eq!(b.tags.get(0).unwrap().tagls, vec!["chores"]);

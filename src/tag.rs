@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn test_brackets_included() {
-        let input = "+p/[[PROJ Vancouver]]";
+        let input = "@p/[[PROJ Vancouver]]";
         let result = parse_tags(input);
         assert_eq!(
             result[0].tagls,
@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn test_parenthesis_included() {
-        let input = "+p/(Hi World)/Derp";
+        let input = "@p/(Hi World)/Derp";
         let result = parse_tags(input);
         assert_eq!(
             result[0].tagls,
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn test_complex_mixed() {
-        let input = "+[[Deep/Space]]/(Nested Level)/simple";
+        let input = "@[[Deep/Space]]/(Nested Level)/simple";
         let result = parse_tags(input);
         assert_eq!(
             result[0].tagls,
@@ -126,7 +126,7 @@ mod tests {
 
     #[test]
     fn test_multiple_tags() {
-        let input = "Check +tag1 and +p/[[Project X]]";
+        let input = "Check @tag1 and @p/[[Project X]]";
         let result = parse_tags(input);
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].tagls, vec!["tag1"]);
@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn test_spaces_without_paranthesis() {
-        let input = "+p/Project X";
+        let input = "@p/Project X";
         let result = parse_tags(input);
         assert_eq!(result.len(), 1);
         assert_eq!(result[0].tagls, vec!["p", "Project"]);
