@@ -1,4 +1,4 @@
-use pulldown_cmark::{Event, HeadingLevel, Parser, Tag, TagEnd};
+use pulldown_cmark::{Event, HeadingLevel, LinkType, Parser, Tag, TagEnd};
 
 fn line_is_heading(line: &str, heading: &str) -> bool {
     if line.trim().starts_with("#") {
@@ -67,7 +67,9 @@ pub fn read_items_under_section(markdown_content: &str, section_title: &str) -> 
     let mut check_block = false;
     let mut in_block = false;
     let mut in_item = false;
+    let mut in_link = false;
     let mut item_content = String::new();
+    let mut link_content = String::new();
 
     for event in parser {
         match event {
@@ -81,6 +83,28 @@ pub fn read_items_under_section(markdown_content: &str, section_title: &str) -> 
                 if in_item {
                     blocks.push(item_content.to_string());
                     in_item = false;
+                }
+            }
+
+            Event::Start(Tag::Link {
+                link_type,
+                dest_url,
+                ..
+            }) => {
+                if in_item {
+                    match link_type {
+                        LinkType::Inline => {
+                            link_content.push_str(&format!("({})", dest_url));
+                            in_link = true;
+                        }
+                        _ => println!("Warning: Ignoring other link-types than inline links"),
+                    }
+                }
+            }
+            Event::End(TagEnd::Link) => {
+                if in_link {
+                    item_content.push_str(&link_content);
+                    in_link = false;
                 }
             }
 
@@ -101,7 +125,11 @@ pub fn read_items_under_section(markdown_content: &str, section_title: &str) -> 
                     in_block = text.to_lowercase().trim() == section_title.trim().to_lowercase();
                 }
                 if in_item {
-                    item_content.push_str(&text);
+                    if in_link {
+                        item_content.push_str(&format!("[{}]", &text));
+                    } else {
+                        item_content.push_str(&text);
+                    }
                 }
             }
             _ => {}
@@ -238,5 +266,28 @@ bla foo
     #[test]
     fn test_line_is_not_heading() {
         assert_eq!(false, line_is_heading("Foo Bar", "Foo Bar"));
+    }
+
+    #[test]
+    fn test_markdown_with_links() {
+        let markdown = "
+# Some Title
+Text
+## Time Blocks
+- 08:00 - 11:00 This is [a link with text](http://andurl.com) and @tag/tagl
+- 12:00 - 13:00 [[Another type of link]]
+# Notes
+- 10:00 - 11:00 This should not appear in the result
+";
+        let block_strings = read_items_under_section(markdown, "Time blocks");
+
+        assert_eq!(
+            block_strings,
+            vec![
+                "08:00 - 11:00 This is [a link with text](http://andurl.com) and @tag/tagl"
+                    .to_string(),
+                "12:00 - 13:00 [[Another type of link]]".to_string(),
+            ],
+        );
     }
 }
