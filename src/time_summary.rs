@@ -29,6 +29,11 @@ pub fn time_per_tag(all_blocks: &Vec<&Block>, level: usize) -> Vec<TagTime> {
 
     let mut timings = Vec::new();
     for (tagl, blocks) in groups {
+        // ignore @break/... tags
+        if level == 0 && tagl == "break" {
+            continue;
+        }
+
         let total_accumulated = total_minutes(&blocks);
         timings.push(TagTime {
             tag: tagl.to_string(),
