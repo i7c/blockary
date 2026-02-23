@@ -36,6 +36,8 @@ pub fn time_per_tag(all_blocks: &Vec<&Block>, level: usize) -> Vec<TagTime> {
             sub_tags: time_per_tag(&blocks.into(), level + 1),
         });
     }
+    // Sort in DESC order
+    timings.sort_by(|l, r| r.minutes.cmp(&l.minutes));
     timings
 }
 
