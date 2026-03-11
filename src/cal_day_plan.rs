@@ -6,8 +6,7 @@ use chrono::{FixedOffset, NaiveDate, NaiveDateTime, Timelike};
 use icalendar::{Calendar, CalendarDateTime, Component, DatePerhapsTime, Event};
 use std::{collections::HashMap, str::FromStr};
 
-pub fn day_plans_from_ical(ical: &str) -> Vec<DayPlan> {
-    let origin = "Calendar";
+pub fn day_plans_from_ical(ical: &str, origin: &str) -> Vec<DayPlan> {
 
     let calendar = ical.parse::<Calendar>().unwrap();
 
@@ -49,8 +48,8 @@ pub fn day_plans_from_ical(ical: &str) -> Vec<DayPlan> {
     day_plans
 }
 
-pub fn day_plan_from_ical(ical: &str, for_day: NaiveDate) -> DayPlan {
-    let day_plans = day_plans_from_ical(ical);
+pub fn day_plan_from_ical(ical: &str, for_day: NaiveDate, origin: &str) -> DayPlan {
+    let day_plans = day_plans_from_ical(ical, origin);
 
     for dp in day_plans {
         if dp.day == Some(for_day) {
@@ -58,7 +57,7 @@ pub fn day_plan_from_ical(ical: &str, for_day: NaiveDate) -> DayPlan {
         }
     }
     DayPlan {
-        origin: "Calendar".to_string(),
+        origin: origin.to_string(),
         blocks: Vec::new(),
         day: Some(for_day),
         source: Source::ICalendar,
@@ -155,7 +154,7 @@ END:VCALENDAR
 
         let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 1).unwrap();
 
-        let day_plan = day_plan_from_ical(ical_str, for_day);
+        let day_plan = day_plan_from_ical(ical_str, for_day, "Calendar");
         assert_eq!(day_plan.blocks.len(), 1);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "09:00 - 13:00");
@@ -223,7 +222,7 @@ END:VCALENDAR";
 
         let for_day: NaiveDate = NaiveDate::from_ymd_opt(2026, 1, 17).unwrap();
 
-        let day_plan = day_plan_from_ical(ical_str, for_day);
+        let day_plan = day_plan_from_ical(ical_str, for_day, "Calendar");
         assert_eq!(day_plan.blocks.len(), 3);
         assert_eq!(day_plan.blocks.get(0).unwrap().origin, "Calendar");
         assert_eq!(day_plan.blocks.get(0).unwrap().period_str, "10:00 - 10:45");
@@ -435,7 +434,7 @@ SUMMARY:Busy
 END:VEVENT
 END:VCALENDAR";
 
-        let day_plans = day_plans_from_ical(ical_str);
+        let day_plans = day_plans_from_ical(ical_str, "Calendar");
 
         assert_eq!(day_plans.len(), 16);
     }

@@ -1,4 +1,5 @@
 use crate::blockary_cfg;
+use crate::cmd_pull;
 use crate::cmd_spent;
 use crate::cmd_sync;
 use chrono::Datelike;
@@ -43,6 +44,12 @@ enum Commands {
         /// Show the time spent for this period
         during: Option<TimeRange>,
     },
+    /// Pull time blocks from configured calendars into the day plan
+    Pull {
+        /// The date to pull events for (default: today), format: YYYY-MM-DD
+        #[arg(short, long)]
+        date: Option<String>,
+    },
 }
 
 pub fn run() {
@@ -53,6 +60,14 @@ pub fn run() {
     match args.command {
         Commands::Sync { .. } => {
             cmd_sync::command(&config);
+        }
+        Commands::Pull { date } => {
+            let for_day = match date {
+                Some(d) => NaiveDate::parse_from_str(&d, "%Y-%m-%d")
+                    .expect("Date must be in YYYY-MM-DD format"),
+                None => today,
+            };
+            cmd_pull::command(config, &for_day);
         }
         Commands::Spent { during } => match during {
             Some(TimeRange::Today) => cmd_spent::command(config, &today, &today),
