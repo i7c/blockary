@@ -38,7 +38,7 @@ impl DayPlanRepo {
             DayPlanRepoType::MarkdownDirectory { dir } => {
                 day_plans_from_md_directory(&self.name, &dir)
             }
-            DayPlanRepoType::ICalString { ical } => day_plans_from_ical(ical),
+            DayPlanRepoType::ICalString { ical } => day_plans_from_ical(ical, &self.name),
         }
     }
 
