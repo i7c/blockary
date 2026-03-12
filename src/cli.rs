@@ -49,6 +49,9 @@ enum Commands {
         /// The date to pull events for (default: today), format: YYYY-MM-DD
         #[arg(short, long)]
         date: Option<String>,
+        /// The config key of the target directory (required when multiple dirs are configured)
+        #[arg(short, long)]
+        target: Option<String>,
     },
 }
 
@@ -61,13 +64,13 @@ pub fn run() {
         Commands::Sync { .. } => {
             cmd_sync::command(&config);
         }
-        Commands::Pull { date } => {
+        Commands::Pull { date, target } => {
             let for_day = match date {
                 Some(d) => NaiveDate::parse_from_str(&d, "%Y-%m-%d")
                     .expect("Date must be in YYYY-MM-DD format"),
                 None => today,
             };
-            cmd_pull::command(config, &for_day);
+            cmd_pull::command(config, &for_day, target);
         }
         Commands::Spent { during } => match during {
             Some(TimeRange::Today) => cmd_spent::command(config, &today, &today),

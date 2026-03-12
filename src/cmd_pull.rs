@@ -1,14 +1,12 @@
 use chrono::NaiveDate;
-use std::fs;
-use walkdir::WalkDir;
 
 use crate::{
-    blockary_cfg::Config,
+    blockary_cfg::{Config, Dir},
     cal_day_plan::day_plan_from_ical,
-    day_plan::day_plan_from_daily_file_md,
+    day_plan::{DayPlanRepo, DayPlanRepoType},
 };
 
-pub fn command(config: Config, for_day: &NaiveDate) {
+pub fn command(config: Config, for_day: &NaiveDate, target: Option<String>) {
     let cals = match &config.cals {
         Some(cals) if !cals.is_empty() => cals,
         _ => {
@@ -17,7 +15,32 @@ pub fn command(config: Config, for_day: &NaiveDate) {
         }
     };
 
+    let target_dir = match resolve_target_dir(&config, target.as_deref()) {
+        Ok(dir) => dir,
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            return;
+        }
+    };
+
     let date_str = for_day.format("%Y-%m-%d").to_string();
+
+    let repo = DayPlanRepo {
+        name: target_dir.name.clone(),
+        repo_type: DayPlanRepoType::MarkdownDirectory {
+            dir: target_dir.path.clone(),
+        },
+    };
+
+    let day_plans = repo.all_of_day(for_day);
+    if day_plans.is_empty() {
+        println!(
+            "Warning: No file found for {} in '{}' ({}). Skipping.",
+            date_str, target_dir.name, target_dir.path
+        );
+        return;
+    }
+    let mut existing_plan = day_plans.into_iter().next().unwrap();
 
     for (cal_name, cal) in cals {
         println!("Pulling from calendar '{}' ({})...", cal_name, cal.uri);
@@ -43,80 +66,56 @@ pub fn command(config: Config, for_day: &NaiveDate) {
             continue;
         }
 
-        for (_, dir) in &config.dirs {
-            match find_md_file_for_day(&dir.path, &date_str) {
-                None => {
-                    println!(
-                        "  Warning: No file found for {} in '{}' ({}). Skipping.",
-                        date_str, dir.name, dir.path
-                    );
-                }
-                Some(abs_path) => {
-                    let md_content = match fs::read_to_string(&abs_path) {
-                        Ok(c) => c,
-                        Err(e) => {
-                            eprintln!(
-                                "  Warning: Could not read {}: {}. Skipping.",
-                                abs_path, e
-                            );
-                            continue;
-                        }
-                    };
+        let mut new_blocks_added = 0;
+        for cal_block in &cal_day_plan.blocks {
+            let conflict = existing_plan
+                .blocks
+                .iter()
+                .any(|b| b.period_str == cal_block.period_str);
 
-                    let mut existing_plan =
-                        day_plan_from_daily_file_md(&md_content, &dir.name, &abs_path, &dir.path);
+            if conflict {
+                println!(
+                    "  Warning: Skipping '{}' ({}) — a block at {} already exists.",
+                    cal_block.desc, cal_name, cal_block.period_str
+                );
+            } else {
+                existing_plan.blocks.push(cal_block.clone());
+                new_blocks_added += 1;
+            }
+        }
 
-                    let mut new_blocks_added = 0;
-                    for cal_block in &cal_day_plan.blocks {
-                        let conflict = existing_plan
-                            .blocks
-                            .iter()
-                            .any(|b| b.period_str == cal_block.period_str);
+        if new_blocks_added > 0 {
+            println!("  Added {} block(s) from '{}'.", new_blocks_added, cal_name);
+        }
+    }
 
-                        if conflict {
-                            println!(
-                                "  Warning: Skipping '{}' ({}) in '{}' — a block at {} already exists.",
-                                cal_block.desc, cal_name, dir.name, cal_block.period_str
-                            );
-                        } else {
-                            existing_plan.blocks.push(cal_block.clone());
-                            new_blocks_added += 1;
-                        }
-                    }
+    existing_plan
+        .blocks
+        .sort_by(|a, b| a.period_str.cmp(&b.period_str));
+    existing_plan.write_to_daily_file();
+    println!("Written to '{}'.", target_dir.name);
+}
 
-                    if new_blocks_added > 0 {
-                        existing_plan
-                            .blocks
-                            .sort_by(|a, b| a.period_str.cmp(&b.period_str));
-                        existing_plan.write_to_daily_file();
-                        println!(
-                            "  Added {} block(s) to '{}' ({}).",
-                            new_blocks_added, dir.name, abs_path
-                        );
-                    }
-                }
+fn resolve_target_dir<'a>(config: &'a Config, target: Option<&str>) -> Result<&'a Dir, String> {
+    match target {
+        Some(key) => config.dirs.get(key).ok_or_else(|| {
+            let available: Vec<&str> = config.dirs.keys().map(|k| k.as_str()).collect();
+            format!(
+                "Unknown target '{}'. Available: {}",
+                key,
+                available.join(", ")
+            )
+        }),
+        None => {
+            if config.dirs.len() == 1 {
+                Ok(config.dirs.values().next().unwrap())
+            } else {
+                let available: Vec<&str> = config.dirs.keys().map(|k| k.as_str()).collect();
+                Err(format!(
+                    "Multiple directories configured, specify --target. Available: {}",
+                    available.join(", ")
+                ))
             }
         }
     }
-}
-
-fn find_md_file_for_day(root: &str, date_str: &str) -> Option<String> {
-    WalkDir::new(root)
-        .into_iter()
-        .filter_map(|entry| entry.ok())
-        .filter(|entry| {
-            entry.file_type().is_file()
-                && entry
-                    .file_name()
-                    .to_str()
-                    .map(|n| n.ends_with(".md"))
-                    .unwrap_or(false)
-                && entry
-                    .path()
-                    .to_str()
-                    .map(|p| p.contains(date_str))
-                    .unwrap_or(false)
-        })
-        .map(|entry| entry.path().to_str().unwrap().to_string())
-        .next()
 }
